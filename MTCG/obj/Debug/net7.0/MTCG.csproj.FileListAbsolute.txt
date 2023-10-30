@@ -1,0 +1,17 @@
+C:\Users\aisae\source\repos\MTCG\MTCG\bin\Debug\net7.0\MTCG.exe
+C:\Users\aisae\source\repos\MTCG\MTCG\bin\Debug\net7.0\MTCG.deps.json
+C:\Users\aisae\source\repos\MTCG\MTCG\bin\Debug\net7.0\MTCG.runtimeconfig.json
+C:\Users\aisae\source\repos\MTCG\MTCG\bin\Debug\net7.0\MTCG.dll
+C:\Users\aisae\source\repos\MTCG\MTCG\bin\Debug\net7.0\MTCG.pdb
+C:\Users\aisae\source\repos\MTCG\MTCG\bin\Debug\net7.0\Newtonsoft.Json.dll
+C:\Users\aisae\source\repos\MTCG\MTCG\obj\Debug\net7.0\MTCG.csproj.AssemblyReference.cache
+C:\Users\aisae\source\repos\MTCG\MTCG\obj\Debug\net7.0\MTCG.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\aisae\source\repos\MTCG\MTCG\obj\Debug\net7.0\MTCG.AssemblyInfoInputs.cache
+C:\Users\aisae\source\repos\MTCG\MTCG\obj\Debug\net7.0\MTCG.AssemblyInfo.cs
+C:\Users\aisae\source\repos\MTCG\MTCG\obj\Debug\net7.0\MTCG.csproj.CoreCompileInputs.cache
+C:\Users\aisae\source\repos\MTCG\MTCG\obj\Debug\net7.0\MTCG.csproj.CopyComplete
+C:\Users\aisae\source\repos\MTCG\MTCG\obj\Debug\net7.0\MTCG.dll
+C:\Users\aisae\source\repos\MTCG\MTCG\obj\Debug\net7.0\refint\MTCG.dll
+C:\Users\aisae\source\repos\MTCG\MTCG\obj\Debug\net7.0\MTCG.pdb
+C:\Users\aisae\source\repos\MTCG\MTCG\obj\Debug\net7.0\MTCG.genruntimeconfig.cache
+C:\Users\aisae\source\repos\MTCG\MTCG\obj\Debug\net7.0\ref\MTCG.dll
