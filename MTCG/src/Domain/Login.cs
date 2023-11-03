@@ -4,11 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MTCG.src.DataAccess.Repositories
+namespace MTCG.src.Domain
 {
-    /*
-    internal class StoreRepo
+    internal class Login
     {
     }
-    */
 }

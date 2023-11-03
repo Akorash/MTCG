@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MTCG.src.Domain
+namespace MTCG.src.Domain.Entities
 {
     [Serializable]
     internal class Card
@@ -14,9 +14,9 @@ namespace MTCG.src.Domain
         private int _damage;
         public Card(int id, string type, int damage)
         {
-            this._id = id;
-            this._type = type;
-            this._damage = damage;
+            _id = id;
+            _type = type;
+            _damage = damage;
         }
         public int Id { get; private set; }
         public enum ElementType
@@ -28,7 +28,8 @@ namespace MTCG.src.Domain
             Normal = 5
         }
         public int Damage { get; }
-        public void CreateCard() { }
+        public void Create() { }
+        public void Trade() { }
         public virtual int Play() { return Damage; }
     }
 }

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MTCG.src.Domain
+namespace MTCG.src.Domain.Entities
 {
     internal class Battle
     {
