@@ -22,6 +22,18 @@ namespace MTCG.src.Domain.Entities
         private readonly string _authString;
         private List<Card> _stack;
         private int _coins;
+
+        public User()
+        {
+            _uVerif = new();
+
+            Username = string.Empty;
+            Password = string.Empty;
+            _authString = string.Empty;
+            _stack = new List<Card>();
+            _coins = START_COINS;
+        }
+
         public User(int id, string uname, string password)
         {
             _uVerif = new();
@@ -112,8 +124,6 @@ namespace MTCG.src.Domain.Entities
     internal class UserVerification
     {
         public UserVerification() { }
-
-        public 
         public void UserExists(string username)
         {
 

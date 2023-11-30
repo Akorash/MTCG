@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 namespace MTCG.src.Domain.Entities
 {
     [Serializable]
-    internal class Card
+    public class Card
     {
         private int _id;
         private string _type;

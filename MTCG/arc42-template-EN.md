@@ -1,20 +1,6 @@
-# 
+#
 
-**About arc42**
-
-arc42, the template for documentation of software and system
-architecture.
-
-Template Version 8.2 EN. (based upon AsciiDoc version), January 2023
-
-Created, maintained and © by Dr. Peter Hruschka, Dr. Gernot Starke and
-contributors. See <https://arc42.org>.
-
-<div class="note">
-
-This version of the template contains some help and explanations. It is
-used for familiarization with arc42 and the understanding of the
-concepts. For documentation of your own system you use better the
+ For documentation of your own system you use better the
 *plain* version.
 
 </div>
@@ -26,9 +12,19 @@ concepts. For documentation of your own system you use better the
 Describes the relevant requirements and the driving forces that software
 architects and development team must consider. These include
 
--   underlying business goals,
+Monster Trading Card Game (short, MTCG) is a University project with didactive purpose for bachelor students (Computer Science).
+As the name implies, the goal is to develop a Luck/Chance based Trading Card Game. More specifically, a web api.
 
--   essential features,
+-   essential features
+|Essential features|
+|--------------------|
+|Web API (HTTP)|
+|Several users should be able to connect at the same time|
+||
+
+-   A user should be able to connect to server and play against another player, (concurrency) in a round based game, where cards get randomly played
+
+-   underlying business goals,
 
 -   essential functional requirements,
 
@@ -49,8 +45,11 @@ extract (or abstract) of requirements. Link to (hopefully existing)
 requirements documents (with version number and information where to
 find it).
 
+link to requirements documents
+
 <div class="formalpara-title">
 
+## TODO: Remove? -------------- start
 **Motivation**
 
 </div>
@@ -59,6 +58,8 @@ From the point of view of the end users a system is created or modified
 to improve support of a business activity and/or improve the quality.
 
 <div class="formalpara-title">
+
+## ----------------------------- end
 
 **Form**
 

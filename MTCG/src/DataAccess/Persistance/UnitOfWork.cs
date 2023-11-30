@@ -16,13 +16,11 @@ namespace MTCG.src.DataAccess.Persistance
 {
     internal class UnitOfWork : IUnitOfWork
     {
-        private readonly string CONNECTION = "Host=postgresdb;Port=5432;Username=postgres;Password=postgres;Database=mtcgdb;";
-
         private readonly Context _context;
         private readonly UserMapper _userMapper;
         public UnitOfWork()
         {
-            _context = new(CONNECTION);
+            _context = new();
             _userMapper = new();
             Users = new UserRepository(_context, _userMapper);
         }

@@ -10,11 +10,11 @@ using MTCG.src.Domain;
 
 namespace MTCG.src.HTTP
 {
-    class Server
+    public class Server
     {
-        private int _port;
-        private int _maxConn;
-        private DataHandler _dh;
+        private readonly int _port;
+        private readonly int _maxConn;
+        private readonly DataHandler _dh;
 
         public Server(int port, int maxConnections)
         {

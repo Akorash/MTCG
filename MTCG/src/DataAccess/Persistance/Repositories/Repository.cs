@@ -1,13 +1,12 @@
-﻿using MTCG.src.DataAccess.Core;
-using Npgsql.TypeMapping;
+﻿using Npgsql.TypeMapping;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-using MTCG.src.DataAccess.Core.Repositories;
 using MTCG.src.DataAccess.Core;
+using MTCG.src.DataAccess.Core.Repositories;
 
 namespace MTCG.src.DataAccess.Persistance.Repositories
 {
