@@ -14,7 +14,7 @@ namespace MTCG.src.HTTP
     {
         private readonly int _port;
         private readonly int _maxConn;
-        private readonly DataHandler _dh;
+        private readonly RequestHandler _dh;
 
         public Server(int port, int maxConnections)
         {
@@ -25,43 +25,19 @@ namespace MTCG.src.HTTP
 
         public async Task StartAsync()
         {
-            try
-            {
-                // New, Bind, Listen --> TCP handshake
+            try {
+                // Bind and listen to incoming clients
                 Socket serverSocket = InitSocket();
-                Console.WriteLine($"Server is listening on port {_port} with a maximum of {_maxConn} connections...");
-
-                while (true)
-                {
+                Console.WriteLine($"Server is listening on port {_port} " +
+                                  $"with a maximum of {_maxConn} connections...");
+                while (true) {
                     Socket clientSocket = await AcceptAsync(serverSocket);
                     _ = HandleClientAsync(clientSocket);
-                }
-
-                
+                }  
             }
-            catch (Exception e)
-            {
+            catch (Exception e) {
                 Console.WriteLine($"{e.Message}");
             }
-        }
-        private Socket InitSocket()
-        {
-            //try
-            //{
-                Socket serverSocket = new(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-                serverSocket.Bind(new IPEndPoint(IPAddress.Parse("127.0.0.1"), _port));
-                serverSocket.Listen(_maxConn);
-                return serverSocket;
-            //}
-            //catch (Exception e)
-            //{
-            //    Console.WriteLine($"{e.Message}");
-            //    return null;
-            //}
-        }
-        private async Task<Socket> AcceptAsync(Socket serverSocket)
-        {
-            return await Task.Factory.FromAsync(serverSocket.BeginAccept, serverSocket.EndAccept, null);
         }
         private async Task HandleClientAsync(Socket clientSocket)
         {
@@ -97,26 +73,27 @@ namespace MTCG.src.HTTP
             switch (url)
             {
                 case "/users/{username}":
-                    // _user.RetrieveData()
+                    // _dh.RetrieveData()
                     SendJsonResponse(clientSocket, "users/id");
                     break;
                 case "/cards":
-                    // _user.ShowCards()
+                    // _dh.ShowCards()
                     SendJsonResponse(clientSocket, "cards");
                     break;
                 case "/deck":
-                    // _user.ShowDeck()
+                    // _dh.ShowDeck()
                     SendJsonResponse(clientSocket, "deck");
                     break;
                 case "/stats":
-                    // _user.RetrieveStats()
+                    // _dh.RetrieveStats()
                     SendJsonResponse(clientSocket, "stats");
                     break;
                 case "/scoreboard":
-                    // _user.RetrieveScoreboard
+                    // _dh.RetrieveScoreboard
                     SendJsonResponse(clientSocket, "scoreboard");
                     break;
                 case "/tradings":
+                    // _dh.ShowTrades
                     SendJsonResponse(clientSocket, "tradings");
                     break;
                 default:
@@ -132,10 +109,11 @@ namespace MTCG.src.HTTP
                 case "/users":
                     // Register a new user with uname and password
                     // 201 User successfully created, 409 User with same username already registered
+                    // _dh.RegisterUser()
                     SendJsonResponse(clientSocket, "users");
                     break;
                 case "/sessions":
-                    SendJsonResponse(clientSocket, _dh.Login());
+                    SendJsonResponse(clientSocket, _dh.Post.Login(body));
                     break;
                 case "/packages":
                     // Create new card package from an array of cards, only admin
@@ -203,6 +181,26 @@ namespace MTCG.src.HTTP
                     SendJsonResponse(clientSocket, "default");
                     break;
             }
+        }
+
+        private Socket InitSocket()
+        {
+            //try
+            //{
+            Socket serverSocket = new(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+            serverSocket.Bind(new IPEndPoint(IPAddress.Parse("127.0.0.1"), _port));
+            serverSocket.Listen(_maxConn);
+            return serverSocket;
+            //}
+            //catch (Exception e)
+            //{
+            //    Console.WriteLine($"{e.Message}");
+            //    return null;
+            //}
+        }
+        private async Task<Socket> AcceptAsync(Socket serverSocket)
+        {
+            return await Task.Factory.FromAsync(serverSocket.BeginAccept, serverSocket.EndAccept, null);
         }
         private void HandleNotFoundRequest(Socket clientSocket)
         {

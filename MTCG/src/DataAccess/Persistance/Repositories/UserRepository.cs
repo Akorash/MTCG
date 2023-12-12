@@ -13,9 +13,9 @@ namespace MTCG.src.DataAccess.Persistance.Repositories
 {
     public class UserRepository : IUserRepository
     {
-        protected readonly Context Context;
+        protected readonly DBManager Context;
         protected readonly UserMapper Mapper;
-        public UserRepository(Context context, UserMapper mapper)
+        public UserRepository(DBManager context, UserMapper mapper)
         {
             Context = context;
             Mapper = mapper;
@@ -40,12 +40,11 @@ namespace MTCG.src.DataAccess.Persistance.Repositories
             UserDTO dto = Mapper.Map(entity);
             Context.AddUser(dto);
         }
-        public void Delete(User entity)
+        public void Delete(int id)
         {
-            UserDTO dto = Context.GetUserById(entity.Id);
-            if (dto != null)
+            if (id != null)
             {
-                Context.DeleteUser(dto);
+                Context.DeleteUser(id);
             }
         }
     }

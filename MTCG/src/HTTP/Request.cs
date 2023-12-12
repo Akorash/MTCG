@@ -6,11 +6,21 @@ using System.Threading.Tasks;
 
 namespace MTCG.src.HTTP
 {
+
+    // JsonSerializer
     internal class Request
     {
+        private readonly char _splitWords = ' ';
+        private readonly string _splitLines = "\r\n";
+        private readonly int _linesUntilMethod = 3;
+        private readonly int _methodIndex = 0;
+        private readonly int _urlIndex = 0;
         public string Method { get; private set; }
         public string Url { get; private set; }
         public string Body { get; private set; }
+        // Path
+        // Params
+
         
         // IDEA: AllowedMethods
 
@@ -26,15 +36,15 @@ namespace MTCG.src.HTTP
         private void HandleRequest(string reqStr)
         {
             // Split Request String into Lines
-            string[] reqLines = reqStr.Split(new[] { "\r\n" }, StringSplitOptions.None);
+            string[] reqLines = reqStr.Split(new[] { _splitLines }, StringSplitOptions.None);
             string reqLine = reqLines[0];
-            string[] reqLineParts = reqLine.Split(' ');
+            string[] reqLineParts = reqLine.Split(_splitWords);
 
             // Parse Method and Url
-            if (reqLineParts.Length == 3)   // Check if request line has a valid format
+            if (reqLineParts.Length == _linesUntilMethod)   // Check if request line has a valid format
             {
-                Method = reqLineParts[0];
-                Url = reqLineParts[1];
+                Method = reqLineParts[_methodIndex];
+                Url = reqLineParts[_urlIndex];
             }
 
             // Parsing Body 
@@ -46,10 +56,15 @@ namespace MTCG.src.HTTP
                 {
                     if (i + 1 < reqLines.Length)    // Check if there is anything after the empty line
                     {
-                        Body = string.Join("\r\n", reqLines, i + 1, reqLines.Length - (i + 1));
+                        Body = string.Join(_splitLines, reqLines, i + 1, reqLines.Length - (i + 1));
                     }
                 }
             }
+        }
+
+        private void ParseMethodAndUrl(string method, string url)
+        {
+
         }
     }
 }

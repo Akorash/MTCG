@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace MTCG.src.DataAccess.Persistance.DTOs
 {
-    internal class CardDTO
+    public class CardDTO
     {
         public int Id { get; set; }
         public string Type { get; set; }

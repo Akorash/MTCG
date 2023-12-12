@@ -1,13 +1,15 @@
 using System.Runtime.CompilerServices;
+
 using MTCG.src.DataAccess.Persistance;
 using MTCG.src.DataAccess.Persistance.DTOs;
+using MTCG.src.DataAccess.Persistance.Repositories;
 
 namespace TestMTCG
 {
     [TestClass]
     public class UnitTestContext
     {
-        private readonly Context _context;
+        private readonly DBManager _context;
 
         public UnitTestContext()
         {

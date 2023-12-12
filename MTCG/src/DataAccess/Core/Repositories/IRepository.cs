@@ -16,6 +16,6 @@ namespace MTCG.src.DataAccess.Core.Repositories
 
         public void Add(T model);
 
-        public void Delete(T model);
+        public void Delete(int id);
     }
 }

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MTCG.src.DataAccess.Persistance;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -9,16 +10,6 @@ namespace MTCG.src.Domain.Entities
     [Serializable]
     public class Card
     {
-        private int _id;
-        private string _type;
-        private int _damage;
-        public Card(int id, string type, int damage)
-        {
-            _id = id;
-            _type = type;
-            _damage = damage;
-        }
-        public int Id { get; private set; }
         public enum ElementType
         {
             Fire = 1,
@@ -27,9 +18,33 @@ namespace MTCG.src.Domain.Entities
             Earth = 4,
             Normal = 5
         }
+        public int Id { get; private set; }
+        public string Type { get; private set; }
         public int Damage { get; }
-        public void Create() { }
-        public void Trade() { }
-        public virtual int Play() { return Damage; }
+
+        public Card(int id, string type, int damage)
+        {
+            Id = id;
+            Type = type;
+            Damage = damage;
+        }                                                                
+        public void Create() 
+        {
+            // Random 
+
+            using (var unitOfWork = new UnitOfWork()) 
+            {
+
+            }
+            // UnitOfWork --> Save Card in the Database
+        }
+        public void Trade() 
+        {
+            // Put int into trade table
+        }
+        public virtual int Play() 
+        { 
+            return Damage; 
+        }
     }
 }

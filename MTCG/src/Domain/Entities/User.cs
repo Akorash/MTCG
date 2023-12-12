@@ -4,8 +4,9 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
-
+using Microsoft.Extensions.Configuration;
 using MTCG.src.DataAccess.Persistance;
+using MTCG.src.DataAccess.Persistance.Mappers;
 using MTCG.src.DataAccess.Persistance.Repositories;
 
 namespace MTCG.src.Domain.Entities
@@ -13,20 +14,18 @@ namespace MTCG.src.Domain.Entities
     public class User
     {
         private readonly int START_COINS = 20;
-
-        private UserVerification _uVerif;
-
-        public int Id { get; private set; }
-        public string Username { get; private set; }
-        public string Password { get; private set; }
+        private readonly int CARD_PRICE = 5;
+        private VerificationHandler _Verif;
         private readonly string _authString;
         private List<Card> _stack;
         private int _coins;
+        public int? Id { get; private set; }
+        public string Username { get; private set; }
+        public string Password { get; private set; }
 
         public User()
         {
-            _uVerif = new();
-
+            _Verif = new();
             Username = string.Empty;
             Password = string.Empty;
             _authString = string.Empty;
@@ -34,10 +33,9 @@ namespace MTCG.src.Domain.Entities
             _coins = START_COINS;
         }
 
-        public User(int id, string uname, string password)
+        public User(int? id, string uname, string password)
         {
-            _uVerif = new();
-
+            _Verif = new();
             Id = id;
             Username = uname;
             Password = password;
@@ -52,36 +50,51 @@ namespace MTCG.src.Domain.Entities
             // Signup
         }
 
-        public void LogIn(string username, string password)
+        public string LogIn(string username, string password)
         {
-            using (UnitOfWork unitOfWork = new())
-            {
-                User user = unitOfWork.Users.GetUserByUsername("John");
+            // Invlid username
+            if (!_Verif.ValidUsername(username)) {
+                return "401";
             }
-            // check if uname exists
-            _uVerif.UserExists(username);
-
-            if (!CorrectPassword())
+            using (var unitOfWork = new UnitOfWork()) 
             {
-                // Error
+                User user = unitOfWork.Users.GetUserByUsername(username);
+                // User doesn't exist
+                if (user == null) {
+                    return "4xx";
+                }
+                // Invlid Password
+                if (!_Verif.ValidPassword(password) || user.Password != password) {
+                    return "401";
+                }
             }
+            return "200";
+        }
+        public List<Card> ShowCards()
+        {
+            using (var unitOfWork = new UnitOfWork())
+            {
+                List<Card> cards = (List<Card>)unitOfWork.Cards.GetAll();
+                return cards;
+            }
+        }
+        public void ConfigureDeck()
+        {
 
-            // hash password
-            // compare with that of database
+        }
+        public List<Card> ShowDeck()
+        {
+            using (var unitOfWork = new UnitOfWork())
+            {
+                // List<int> deckIds;
+                // unitOfWork.Users.GetDeck()
+                // For each cardId in deckIds,
+                // List<Card> deck add(GetCardById(cardId)) 
+
+            }
+            return new List<Card>();
         }
 
-        /*private void ConfigureDeck()
-        {
-            PrintStack();
-            // Get input from user
-            // ChooseCard() five times
-            // While i > 5 
-            // Deck[i] = 
-
-            // OPT: Save cards in a list
-        }*/
-
-        // TODO: Change this
         private string GetCardIds(List<Card> list, int length)
         {
             if (list.Count <= 0 || list == null)
@@ -96,37 +109,34 @@ namespace MTCG.src.Domain.Entities
             }
             return cards;
         }
-
-        // Server request, provides deck
-
-        // Request to Log in 
-
-        // Make sure you can only call the Battle method when logged in
-        private void Battle()
+        public void Battle()
         {
             // If a player is logged in
-            // If a player requests the server to play
+            
             // Signal the server (Game) to put you on the waiting list
             // And, send the server your deck (?) and Id
         }
-        private int ChooseCard()
-        {
-            // Gets input from user (number)
-            // Only indecies from the deck
-            // If input is valid, returns index from deck
-            return 0;
-        }
         private void BuyPackage() { }
-        private bool SuffiCoins() { return _coins >= 5; }
+        private bool SuffiCoins() { return _coins >= CARD_PRICE; }
         private bool CorrectPassword() { return true; }
     }
 
-    internal class UserVerification
+    internal class VerificationHandler
     {
-        public UserVerification() { }
-        public void UserExists(string username)
+        public VerificationHandler() { }
+        public bool ValidUsername(string username)
         {
-
+            if (username == null) {
+                return false;
+            }
+            return true;
+        }
+        public bool ValidPassword(string password)
+        {
+            if (password == null) {
+                return false;
+            }
+            return true;
         }
         public void UsernameTaken(string username)
         {

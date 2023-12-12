@@ -1,9 +1,4 @@
 C:\Users\aisae\source\repos\MTCG\TestMTCG\bin\Debug\net7.0\CoverletSourceRootsMapping
-C:\Users\aisae\source\repos\MTCG\TestMTCG\obj\Debug\net7.0\TestMTCG.csproj.AssemblyReference.cache
-C:\Users\aisae\source\repos\MTCG\TestMTCG\obj\Debug\net7.0\TestMTCG.GeneratedMSBuildEditorConfig.editorconfig
-C:\Users\aisae\source\repos\MTCG\TestMTCG\obj\Debug\net7.0\TestMTCG.AssemblyInfoInputs.cache
-C:\Users\aisae\source\repos\MTCG\TestMTCG\obj\Debug\net7.0\TestMTCG.AssemblyInfo.cs
-C:\Users\aisae\source\repos\MTCG\TestMTCG\obj\Debug\net7.0\TestMTCG.csproj.CoreCompileInputs.cache
 C:\Users\aisae\source\repos\MTCG\TestMTCG\bin\Debug\net7.0\testhost.dll
 C:\Users\aisae\source\repos\MTCG\TestMTCG\bin\Debug\net7.0\MTCG.deps.json
 C:\Users\aisae\source\repos\MTCG\TestMTCG\bin\Debug\net7.0\MTCG.runtimeconfig.json
@@ -113,6 +108,11 @@ C:\Users\aisae\source\repos\MTCG\TestMTCG\bin\Debug\net7.0\Microsoft.VisualStudi
 C:\Users\aisae\source\repos\MTCG\TestMTCG\bin\Debug\net7.0\MTCG.dll
 C:\Users\aisae\source\repos\MTCG\TestMTCG\bin\Debug\net7.0\MTCG.pdb
 C:\Users\aisae\source\repos\MTCG\TestMTCG\bin\Debug\net7.0\Microsoft.VisualStudio.TestPlatform.TestFramework.Extensions.xml
+C:\Users\aisae\source\repos\MTCG\TestMTCG\obj\Debug\net7.0\TestMTCG.csproj.AssemblyReference.cache
+C:\Users\aisae\source\repos\MTCG\TestMTCG\obj\Debug\net7.0\TestMTCG.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\aisae\source\repos\MTCG\TestMTCG\obj\Debug\net7.0\TestMTCG.AssemblyInfoInputs.cache
+C:\Users\aisae\source\repos\MTCG\TestMTCG\obj\Debug\net7.0\TestMTCG.AssemblyInfo.cs
+C:\Users\aisae\source\repos\MTCG\TestMTCG\obj\Debug\net7.0\TestMTCG.csproj.CoreCompileInputs.cache
 C:\Users\aisae\source\repos\MTCG\TestMTCG\obj\Debug\net7.0\TestMTCG.csproj.CopyComplete
 C:\Users\aisae\source\repos\MTCG\TestMTCG\obj\Debug\net7.0\TestMTCG.dll
 C:\Users\aisae\source\repos\MTCG\TestMTCG\obj\Debug\net7.0\refint\TestMTCG.dll

@@ -16,18 +16,24 @@ namespace MTCG.src.DataAccess.Persistance
 {
     internal class UnitOfWork : IUnitOfWork
     {
-        private readonly Context _context;
+        private readonly DBManager _manager;
         private readonly UserMapper _userMapper;
+        private readonly CardMapper _cardMapper;
+
         public UnitOfWork()
         {
-            _context = new();
+            _manager = new();
             _userMapper = new();
-            Users = new UserRepository(_context, _userMapper);
+            _cardMapper = new();
+
+            Users = new UserRepository(_manager, _userMapper);
+            Cards = new CardRepository(_manager, _cardMapper);
         }
         public IUserRepository Users { get; private set; } 
+        public ICardRepository Cards { get; private set; }
         public void Dispose()
         {
-            _context.Dispose();
+            _manager.Dispose();
         }
     }
 }

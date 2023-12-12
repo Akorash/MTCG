@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MTCG.src.Domain
+namespace MTCG.src.HTTP
 {
-    internal class Login
+    internal interface Response
     {
     }
 }
