@@ -27,23 +27,35 @@ namespace MTCG.src.HTTP
     public class PostFunctions
     {
         public PostFunctions() { }
-        public HttpStatusCode Register(string body)
+        public string Register(string body)
         {
-            using (var unitOfWork = new UnitOfWork())
+            // Create User Domain Entity
+            var user = new User(null, GetUsername(body), GetPassword(body));
+
+            try
             {
-                var user = new User(null, GetUsername(body), GetPassword(body));
-                unitOfWork.Users.Add(user);
-                // If this is successful
-                return HttpStatusCode.Created;
-            } 
-                // 201 User successfully created, 409 User with same username already registered
-                // return HttpStatusCode.Conflict;
+                user.Register();
+                return HttpStatusCode.Created.ToString();
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                return HttpStatusCode.Conflict.ToString();
+            }
         }
-        public string Login(string body)
+        public void LogIn(string body)
         {
             // Deserialize object
             var user = new User();
-            return user.LogIn(GetUsername(body), GetPassword(body));
+      
+            try
+            {
+                user.LogIn();
+            }
+            catch (Exception e)
+            {
+
+            }
         }
 
         public string NewPackage()
@@ -82,55 +94,25 @@ namespace MTCG.src.HTTP
         }
         public string RetrieveUserData()
         {
-            // _user.RetrieveData()
-            // Retrieve user data (string username) --> only admin or matching user
-            // 200 Data successfully retrieved$ref: '#/components/schemas/UserData',
-            // 401 $ref: '#/components/responses/UnauthorizedError'
-            // 404 User not found
-            // sercurity mtcAuth
             return "";
         }
 
         public string ShowCards()
         {
             var user = new User();
-            // _user.ShowCards()
-            // Show users cards
-            // 200 The user has cards, the response contains these
-            // 204 The request was fine, but the user doesn't have any cards
-            // 401 #/components/responses/UnauthorizedError
             return "";
         }
         public string ShowDeck()
         {
             var user = new User();
-            user.ShowDeck();
-            // Into JSON(user.ShowDeck())
-
-            // _user.ShowDeck()
-            // Shows the user's currently configured deck
-            // query, plain json
-            // 200 The deck has cards, the response contains these
-            // array and string deck description
-            // 204 deck !have cards
-            // 401 $ref: '#/components/responses/UnauthorizedError'
             return "";
         }
         public string RetrieveStats()
         {
-            // _user.RetrieveStats()
-            // Retrieves the stats for an individual user
-            // 200
-            // '401':
-            // $ref: '#/components/responses/UnauthorizedError'
             return "";
         }
         public string RetrieveScoreBoard()
         {
-            // _user.RetrieveScoreboard
-            // Retrieves the user scoreboard ordered by the user's ELO.
-            // 200, 401
-            // ... 
             return "";
         }
         private string GetUsername(string body)
@@ -175,16 +157,6 @@ namespace MTCG.src.HTTP
         public string ShowDeck()
         {
             var user = new User();
-            user.ShowDeck();
-            // Into JSON(user.ShowDeck())
-
-            // _user.ShowDeck()
-            // Shows the user's currently configured deck
-            // query, plain json
-            // 200 The deck has cards, the response contains these
-            // array and string deck description
-            // 204 deck !have cards
-            // 401 $ref: '#/components/responses/UnauthorizedError'
             return "";
         }
         public string RetrieveStats()
@@ -208,7 +180,7 @@ namespace MTCG.src.HTTP
         {
             return "";
         }
-
+        
         private string GetUsername(string body)
         {
             // TODO: Parse

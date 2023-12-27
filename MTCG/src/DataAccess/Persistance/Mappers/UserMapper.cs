@@ -18,7 +18,6 @@ namespace MTCG.src.DataAccess.Persistance.Mappers
         {
             return new User(userDTO.Id, userDTO.Username, userDTO.Password);
         }
-
         public UserDTO Map(User user)
         {
             return new UserDTO()

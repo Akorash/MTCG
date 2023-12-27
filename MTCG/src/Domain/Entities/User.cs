@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -44,31 +45,47 @@ namespace MTCG.src.Domain.Entities
             _coins = START_COINS;
         }
 
-        public void SignUp()
+        public void Register()
         {
+            // TODO Invlid username
+
             // Check if user already exists
+            using (var unitOfWork = new UnitOfWork())
+            {
+                // If user with the same username exists
+                if (unitOfWork.Users.GetUserByUsername(Username) != null)
+                {
+                    throw new DuplicateNameException(Username);
+                }
+            }
             // Signup
+            using (var unitOfWork = new UnitOfWork())
+            {
+                unitOfWork.Users.Add(this);
+            }
         }
 
-        public string LogIn(string username, string password)
+        public void LogIn()
         {
             // Invlid username
-            if (!_Verif.ValidUsername(username)) {
-                return "401";
+            /*
+            if (!_Verif.ValidUsername(Username)) 
+            {
             }
+            */
             using (var unitOfWork = new UnitOfWork()) 
             {
-                User user = unitOfWork.Users.GetUserByUsername(username);
+                var user = unitOfWork.Users.GetUserByUsername(Username);
                 // User doesn't exist
-                if (user == null) {
-                    return "4xx";
+                if (user == null) 
+                {
+                    // throw new 
                 }
                 // Invlid Password
-                if (!_Verif.ValidPassword(password) || user.Password != password) {
-                    return "401";
+                if (!_Verif.ValidPassword(Password) || user.Password != Password) {
+                    // throw new 
                 }
             }
-            return "200";
         }
         public List<Card> ShowCards()
         {
@@ -82,12 +99,16 @@ namespace MTCG.src.Domain.Entities
         {
 
         }
-        public List<Card> ShowDeck()
+        public List<Card> ShowDeck(int UserId)
         {
             using (var unitOfWork = new UnitOfWork())
             {
-                // List<int> deckIds;
-                // unitOfWork.Users.GetDeck()
+
+                var deckId = new List<int>();
+                var user = unitOfWork.Users.Get(UserId);
+                                        
+
+
                 // For each cardId in deckIds,
                 // List<Card> deck add(GetCardById(cardId)) 
 

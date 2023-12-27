@@ -82,10 +82,10 @@ namespace MTCG.src.DataAccess.Persistance
                             Console.WriteLine(user.Id + "\n" + user.Username + "\n" + user.Password + "\n"); // TODO: Remove debug
                             return user;
                         }
-                        return null;
                     }
                 }
             }
+            return null;
         }
         public List<UserDTO> GetAllUsers()
         {
@@ -255,19 +255,69 @@ namespace MTCG.src.DataAccess.Persistance
                 }
             }
         }
-        public void CreateTableUsers()
+        public void CreateUsersTable()
         {
             using (var connection = new NpgsqlConnection(GetConnectionString()))
             {
                 connection.Open();
-                if (connection != null && connection.State == ConnectionState.Closed) {
+
+                if (connection != null && connection.State == ConnectionState.Closed)
+                {
                     return;
                 }
-                using (var cmd = new NpgsqlCommand("INSERT INTO users(username, password) VALUES ('test1', 'password1'), ('test2', 'password2'), ('test3', 'password3');", connection)) {
+                using (var cmd = new NpgsqlCommand("CREATE TABLE users(id SERIAL PRIMARY KEY, username VARCHAR(50) UNIQUE NOT NULL, password VARCHAR(255) NOT NULL);", connection))
+                {
                     cmd.ExecuteNonQuery();
                 }
             }
         }
+        public void CreateCardsTable()
+        {
+            using (var connection = new NpgsqlConnection(GetConnectionString()))
+            {
+                connection.Open();
+
+                if (connection != null && connection.State == ConnectionState.Closed)
+                {
+                    return;
+                }
+                using (var cmd = new NpgsqlCommand("CREATE TABLE cards(id SERIAL PRIMARY KEY, type VARCHAR(50) NOT NULL, damage INT() NOT NULL);", connection))
+                {
+                    cmd.ExecuteNonQuery();
+                }
+            }
+        }
+        public void FillTableUsers()
+        {
+            using (var connection = new NpgsqlConnection(GetConnectionString()))
+            {
+                connection.Open();
+                if (connection != null && connection.State == ConnectionState.Closed)
+                {
+                    return;
+                }
+                using (var cmd = new NpgsqlCommand("INSERT INTO users(username, password) VALUES ('test1', 'password1'), ('test2', 'password2'), ('test3', 'password3');", connection))
+                {
+                    cmd.ExecuteNonQuery();
+                }
+            }
+        }
+        public void CreateTableCards()
+        {
+            using (var connection = new NpgsqlConnection(GetConnectionString()))
+            {
+                connection.Open();
+                if (connection != null && connection.State == ConnectionState.Closed)
+                {
+                    return;
+                }
+                using (var cmd = new NpgsqlCommand(";", connection))
+                {
+                    cmd.ExecuteNonQuery();
+                }
+            }
+        }
+          
         private void SetSearchPath()
         {
             using (var connection = new NpgsqlConnection(GetConnectionString()))

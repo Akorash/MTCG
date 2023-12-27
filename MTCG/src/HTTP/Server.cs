@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using MTCG.src.Domain;
+using MTCG.src.HTTP;
 
 namespace MTCG.src.HTTP
 {
@@ -25,17 +26,20 @@ namespace MTCG.src.HTTP
 
         public async Task StartAsync()
         {
-            try {
+            try
+            {
                 // Bind and listen to incoming clients
                 Socket serverSocket = InitSocket();
                 Console.WriteLine($"Server is listening on port {_port} " +
                                   $"with a maximum of {_maxConn} connections...");
-                while (true) {
+                while (true)
+                {
                     Socket clientSocket = await AcceptAsync(serverSocket);
                     _ = HandleClientAsync(clientSocket);
-                }  
+                }
             }
-            catch (Exception e) {
+            catch (Exception e)
+            {
                 Console.WriteLine($"{e.Message}");
             }
         }
@@ -47,7 +51,12 @@ namespace MTCG.src.HTTP
             int bytesRead = await clientSocket.ReceiveAsync(new ArraySegment<byte>(buffer), SocketFlags.None);
             string reqStr = Encoding.ASCII.GetString(buffer, 0, bytesRead);
 
-            Request req = new(reqStr);
+            var req = new Request();
+            try
+            {
+                req.Build(reqStr);
+            }
+            req.Build()
 
             switch (req.Method)
             {
@@ -74,6 +83,7 @@ namespace MTCG.src.HTTP
             {
                 case "/users/{username}":
                     // _dh.RetrieveData()
+                    var response = new Response();
                     SendJsonResponse(clientSocket, "users/id");
                     break;
                 case "/cards":
@@ -107,28 +117,14 @@ namespace MTCG.src.HTTP
             switch (url)
             {
                 case "/users":
-                    // Register a new user with uname and password
-                    // 201 User successfully created, 409 User with same username already registered
-                    // _dh.RegisterUser()
-                    SendJsonResponse(clientSocket, "users");
+                    SendJsonResponse(clientSocket, _dh.Post.Register(body).ToString());
                     break;
                 case "/sessions":
-                    SendJsonResponse(clientSocket, _dh.Post.Login(body));
                     break;
                 case "/packages":
-                    // Create new card package from an array of cards, only admin
-                    // 201 Package and cards successfully created
-                    // 401 $ref: '#/components/responses/UnauthorizedError'
-                    // 403 Provided user is not "admin"
-                    // 409 At least one card in the packages already exists
                     SendJsonResponse(clientSocket, "packages");
                     break;
                 case "/transactions/packages":
-                    // Aquire a card package with user money
-                    // 200 A package has been successfully bought
-                    // 401 $ref: '#/components/responses/UnauthorizedError'
-                    // 403 Not enough money for buying a card package
-                    // 404 No card package available for buying
                     SendJsonResponse(clientSocket, "transactons/packages");
                     break;
                 case "/battles":
@@ -153,13 +149,6 @@ namespace MTCG.src.HTTP
                     SendJsonResponse(clientSocket, "users");
                     break;
                 case "/deck":
-                // Configures the deck with four provided cards
-                // Send four card IDs to configure a new full deck. A failed request will not change the previously defined deck.
-                // '200':description: The deck has been successfully configured
-                // '400':description: The provided deck did not include the required amount of cards
-                // ' 401' $ref: '#/components/responses/UnauthorizedError'
-                // '403':
-                // description: At least one of the provided cards does not belong to the user or is not available.
                     SendJsonResponse(clientSocket, "deck");
                     break;
                 default:
@@ -202,6 +191,8 @@ namespace MTCG.src.HTTP
         {
             return await Task.Factory.FromAsync(serverSocket.BeginAccept, serverSocket.EndAccept, null);
         }
+
+        /*
         private void HandleNotFoundRequest(Socket clientSocket)
         {
             // Respond with a 404 Not Found error
@@ -213,7 +204,7 @@ namespace MTCG.src.HTTP
         {
             var responseData = new { Message = message };
             string jsonResponse = JsonConvert.SerializeObject(responseData);
-            byte[] responseBuffer = Encoding.ASCII.GetBytes($"HTTP/1.1 200 OK\r\nContent-Type: application/json\r\n\r\n{jsonResponse}");
+            byte[] responseBuffer = Encoding.ASCII.GetBytes($"HTTP/1.1 {jsonResponse}");
             SendResponse(clientSocket, responseBuffer);
         }
         private void SendResponse(Socket clientSocket, byte[] responseBuffer)
@@ -222,5 +213,7 @@ namespace MTCG.src.HTTP
             clientSocket.Shutdown(SocketShutdown.Both);
             clientSocket.Close();
         }
+        */
+
     }
 }

@@ -12,59 +12,68 @@ namespace MTCG.src.HTTP
     {
         private readonly char _splitWords = ' ';
         private readonly string _splitLines = "\r\n";
-        private readonly int _linesUntilMethod = 3;
+        private readonly int _startLineElements = 3;
         private readonly int _methodIndex = 0;
-        private readonly int _urlIndex = 0;
+        private readonly int _urlIndex = 1;
         public string Method { get; private set; }
         public string Url { get; private set; }
         public string Body { get; private set; }
-        // Path
-        // Params
 
-        
-        // IDEA: AllowedMethods
-
-        public Request(string message)
+        public Request()
         {
             Method = string.Empty;
             Url = string.Empty;
             Body = string.Empty;
-
-            HandleRequest(message);
         }
 
-        private void HandleRequest(string reqStr)
+        public void Build(string message)
         {
-            // Split Request String into Lines
-            string[] reqLines = reqStr.Split(new[] { _splitLines }, StringSplitOptions.None);
-            string reqLine = reqLines[0];
-            string[] reqLineParts = reqLine.Split(_splitWords);
-
-            // Parse Method and Url
-            if (reqLineParts.Length == _linesUntilMethod)   // Check if request line has a valid format
+            try
             {
-                Method = reqLineParts[_methodIndex];
-                Url = reqLineParts[_urlIndex];
+                HandleRequest(message);
             }
-
-            // Parsing Body 
-            for (int i = 1; i < reqLines.Length; i++)   // Start with i = 1, since we're only interested in the lines after the request line 
+            catch (Exception e)
             {
-                string headerLine = reqLines[i];
+                // TODO
+            }   
+        }
 
-                if (string.IsNullOrEmpty(headerLine))
+        private void HandleRequest(string request)
+        {
+            // Split request into lines
+            string[] requestLines = request.Split(new[] { _splitLines }, StringSplitOptions.None);  // Split request into lines
+            
+            // Parse start line
+            string startLine = requestLines[0];
+            string[] startLineParts = startLine.Split(_splitWords);
+            ParseMethodAndUrl(startLineParts[0], startLineParts[1], startLineParts.Length);
+
+            // Parse body 
+            ParseBody(requestLines);
+        }
+        private void ParseMethodAndUrl(string method, string url, int amountOfElementsInStartLine)
+        {
+            if (amountOfElementsInStartLine <= _startLineElements || amountOfElementsInStartLine >= _startLineElements)
+            {
+                throw new ArgumentException();
+            }
+            Method = method;
+            Url = url;
+        }
+        private void ParseBody(string[] requestLines)
+        {
+            for (int i = 1; i < requestLines.Length; i++)   // Starts with i = 1 since we've already looked at the start line 
+            {
+                string currentLine = requestLines[i];
+
+                if (string.IsNullOrEmpty(currentLine))
                 {
-                    if (i + 1 < reqLines.Length)    // Check if there is anything after the empty line
+                    if (i + 1 < requestLines.Length)    // i contains the index of the empty line, if i+1 is not a valid index, there is nothing after the empty line
                     {
-                        Body = string.Join(_splitLines, reqLines, i + 1, reqLines.Length - (i + 1));
+                        Body = string.Join(_splitLines, requestLines, i + 1, requestLines.Length - (i + 1));
                     }
                 }
             }
-        }
-
-        private void ParseMethodAndUrl(string method, string url)
-        {
-
         }
     }
 }
