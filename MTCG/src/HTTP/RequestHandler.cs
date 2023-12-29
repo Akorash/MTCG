@@ -8,46 +8,48 @@ using MTCG.src.DataAccess.Persistance.Mappers;
 using MTCG.src.DataAccess.Persistance.Repositories;
 using MTCG.src.DataAccess.Persistance;
 using MTCG.src.Domain;
+using MTCG.src.HTTP;
 using MTCG.src.Domain.Entities;
 using System.Net;
+using System.Net.Sockets;
+using System.Data;
 
 namespace MTCG.src.HTTP
 {
     public class RequestHandler
     {
-        public PostFunctions Post { get; set; }
-        public GetFunctions Get { get; set; }
-        public RequestHandler()
-        {
-            Post = new PostFunctions();
-            Get = new GetFunctions();
-        }
-    }
-
-    public class PostFunctions
-    {
-        public PostFunctions() { }
-        public string Register(string body)
+        private HttpStatusCode _status;
+        public RequestHandler() { }
+        // Post Functions ----------
+        public void Register(Socket clientSocket, string body)
         {
             // Create User Domain Entity
             var user = new User(null, GetUsername(body), GetPassword(body));
-
+            // Atempt to register User
             try
             {
                 user.Register();
-                return HttpStatusCode.Created.ToString();
+                _status = HttpStatusCode.Created;
+            }
+            catch (DuplicateNameException e) // Username taken
+            {
+                Console.WriteLine($"Registration failed: {e.Message}");
+                _status = HttpStatusCode.Conflict;
             }
             catch (Exception e)
             {
-                Console.WriteLine(e);
-                return HttpStatusCode.Conflict.ToString();
+                // TODO fix this error
+                Console.WriteLine($"Registration failed: {e.Message}");
+                _status = HttpStatusCode.NotFound;
             }
+            // Send Response
+            var response = new Response(_status);
+            response.SendJsonResponse(clientSocket, _status.ToString());
         }
-        public void LogIn(string body)
+        public void LogIn(Socket clientSocket, string body)
         {
             // Deserialize object
             var user = new User();
-      
             try
             {
                 user.LogIn();
@@ -57,136 +59,61 @@ namespace MTCG.src.HTTP
 
             }
         }
-
-        public string NewPackage()
-        {
-            // Create new card package from an array of cards, only admin
-            // 201 Package and cards successfully created
-            // 401 $ref: '#/components/responses/UnauthorizedError'
-            // 403 Provided user is not "admin"
-            // 409 At least one card in the packages already exists
-            return "";
-        }
-
-        public string BuyPackage(string body)
-        {
-            // Aquire a card package with user money
-            var user = new User(null, GetUsername(body), GetPassword(body));
-            // 200 A package has been successfully bought
-            // 401 $ref: '#/components/responses/UnauthorizedError'
-            // 403 Not enough money for buying a card package
-            // 404 No card package available for buying
-            return "";
-        }
-        public string postBattles()
+        public string NewPackage(Socket clientSocket, string body)
         {
             return "";
         }
-
-        public string postTradings()
+        public string BuyPackage(Socket clientSocket, string body)
         {
             return "";
         }
-
-        public string postTradingsWithId()
+        public string Battles(Socket clientSocket, string body)
         {
             return "";
         }
-        public string RetrieveUserData()
+        public string Tradings(Socket clientSocket, string body)
         {
             return "";
         }
-
-        public string ShowCards()
+        public string TradingsWithId(Socket clientSocket, string body)
+        {
+            return "";
+        }
+        public string RetrieveUserData(Socket clientSocket, string body)
+        {
+            return "";
+        }
+        public string ShowDeck(Socket clientSocket, string body)
         {
             var user = new User();
             return "";
         }
-        public string ShowDeck()
-        {
-            var user = new User();
-            return "";
-        }
-        public string RetrieveStats()
+        public string RetrieveStats(Socket clientSocket, string body)
         {
             return "";
         }
-        public string RetrieveScoreBoard()
+        public string RetrieveScoreBoard(Socket clientSocket, string body)
         {
             return "";
         }
-        private string GetUsername(string body)
-        {
-            // TODO: Parse
-            return "test1";
-        }
-
-        private string GetPassword(string body)
-        {
-            // TODO: Parse
-            return "password1";
-        }
-
-    }
-
-    public class GetFunctions
-    { 
-        public GetFunctions() { }
-
-        public string RetrieveUserData()
-        {
-            // _user.RetrieveData()
-            // Retrieve user data (string username) --> only admin or matching user
-            // 200 Data successfully retrieved$ref: '#/components/schemas/UserData',
-            // 401 $ref: '#/components/responses/UnauthorizedError'
-            // 404 User not found
-            // sercurity mtcAuth
-            return "";
-        }
-        public string ShowCards()
+        public string ShowCards(Socket clientSocket, string body)
         {
             var user = new User();
             List<Card> cards = user.ShowCards();
-            // _user.ShowCards()
-            // Show users cards
-            // 200 The user has cards, the response contains these
-            // 204 The request was fine, but the user doesn't have any cards
-            // 401 #/components/responses/UnauthorizedError
             return "";
         }
-        public string ShowDeck()
-        {
-            var user = new User();
-            return "";
-        }
-        public string RetrieveStats()
-        {
-            // _user.RetrieveStats()
-            // Retrieves the stats for an individual user
-            // 200
-            // '401':
-            // $ref: '#/components/responses/UnauthorizedError'
-            return "";
-        }
-        public string RetrieveScoreBoard()
-        {
-            // _user.RetrieveScoreboard
-            // Retrieves the user scoreboard ordered by the user's ELO.
-            // 200, 401
-            // ... 
-            return "";
-        }
-        public string ShowTrades()
+        static string ShowTrades(Socket clientSocket, string body)
         {
             return "";
         }
-        
-        private string GetUsername(string body)
+
+        public string GetUsername(string body)
         {
             // TODO: Parse
             return "test1";
         }
-        private string GetPassword(string body)
+
+        public string GetPassword(string body)
         {
             // TODO: Parse
             return "password1";

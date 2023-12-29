@@ -1,36 +1,37 @@
 ﻿using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net;
 using System.Net.Sockets;
+using System.Runtime.CompilerServices;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace MTCG.src.HTTP
 {
     public class Response
     {
-        private string _version = "1.1";
-        private string _protocol = "HTTP";
-        private string _status;
-        private string _body; 
-        public Response() 
+        private readonly string _newLine = "\r\n";
+        private readonly string _version = "1.1";
+        private readonly string _protocol = "HTTP";
+        private readonly string _headerContentType = $"Content-Type: application/json";
+        private string _headerContentLength;
+        private HttpStatusCode _status;
+        public Response(HttpStatusCode status)
         {
-            _status = default; 
-            _body = default;
+            _status = status;
+            _headerContentLength = default;
         }
-        public void Build(string message) 
+        public void SendJsonResponse(Socket clientSocket, string message)
         {
-            /*
-            ParseStatusLine(message);
-            */
-        }
-        private void SendJsonResponse(Socket clientSocket, string message)
-        {
+            // Object to json
             var responseData = new { Message = message };
             string jsonResponse = JsonConvert.SerializeObject(responseData);
-            byte[] responseBuffer = Encoding.ASCII.GetBytes(_protocol + "/" + _version + jsonResponse);
+
+            // Set content length
+            _headerContentLength = $"Content-Length: {jsonResponse.Length}";
+
+            // Send response
+            byte[] responseBuffer = Encoding.ASCII.GetBytes($"{_protocol}/{_version} {((int)_status)}{_newLine}" +
+                                                            $"{_headerContentType}{_newLine}{_headerContentLength}" +
+                                                            $"{_newLine}{_newLine}{jsonResponse}");
             SendResponse(clientSocket, responseBuffer);
         }
         private void SendResponse(Socket clientSocket, byte[] responseBuffer)
@@ -39,17 +40,5 @@ namespace MTCG.src.HTTP
             clientSocket.Shutdown(SocketShutdown.Both);
             clientSocket.Close();
         }
-
-        /*
-        private void ParseStatusLine(string message)
-        {
-            if (amountOfElementsInStartLine <= _startLineElements || amountOfElementsInStartLine >= _startLineElements)
-            {
-                throw new ArgumentException();
-            }
-            Method = method;
-            Url = url;
-        }
-        */
     }
 }

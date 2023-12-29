@@ -15,24 +15,23 @@ namespace MTCG.src.HTTP
     {
         private readonly int _port;
         private readonly int _maxConn;
-        private readonly RequestHandler _dh;
+        private readonly RequestHandler _dh; // Manages requests and sends the corresponding response
 
         public Server(int port, int maxConnections)
         {
-            this._port = port;
-            this._maxConn = maxConnections;
-            this._dh = new();
+            _port = port;
+            _maxConn = maxConnections;
+
+            _dh = new RequestHandler();
         }
 
         public async Task StartAsync()
         {
             try
             {
-                // Bind and listen to incoming clients
-                Socket serverSocket = InitSocket();
-                Console.WriteLine($"Server is listening on port {_port} " +
-                                  $"with a maximum of {_maxConn} connections...");
-                while (true)
+                Socket serverSocket = InitSocket(); // Bind and Listen
+                Console.WriteLine($"Server is listening on port {_port} with a maximum of {_maxConn} connections...");
+                while (true) // Listen and Accept --> Start new Task for each new client
                 {
                     Socket clientSocket = await AcceptAsync(serverSocket);
                     _ = HandleClientAsync(clientSocket);
@@ -45,36 +44,39 @@ namespace MTCG.src.HTTP
         }
         private async Task HandleClientAsync(Socket clientSocket)
         {
-            // TODO: Buffer size error
-            byte[] buffer = new byte[1024];
-            // TODO: Error handling?
-            int bytesRead = await clientSocket.ReceiveAsync(new ArraySegment<byte>(buffer), SocketFlags.None);
-            string reqStr = Encoding.ASCII.GetString(buffer, 0, bytesRead);
-
-            var req = new Request();
             try
             {
-                req.Build(reqStr);
-            }
-            req.Build()
+                // Recieve message
+                byte[] buffer = new byte[1024];
+                int bytesRead = await clientSocket.ReceiveAsync(new ArraySegment<byte>(buffer), SocketFlags.None);
+                var reqStr = Encoding.ASCII.GetString(buffer, 0, bytesRead);
 
-            switch (req.Method)
+                var req = new Request();
+
+                // Parse Request
+                req.Build(reqStr);
+
+                switch (req.Method)
+                {
+                    case "GET":
+                        HandleGet(clientSocket, req.Url, req.Body);
+                        break;
+                    case "POST":
+                        HandlePost(clientSocket, req.Url, req.Body);
+                        break;
+                    case "PUT":
+                        HandlePut(clientSocket, req.Url, req.Body);
+                        break;
+                    case "DELETE":
+                        HandleDelete(clientSocket, req.Url, req.Body);
+                        break;
+                    default:
+                        break;
+                }
+            }
+            catch (Exception e)
             {
-                case "GET":
-                    HandleGet(clientSocket, req.Url, req.Body);
-                    break;
-                case "POST":
-                    HandlePost(clientSocket, req.Url, req.Body);
-                    break;
-                case "PUT":
-                    HandlePut(clientSocket, req.Url, req.Body);
-                    break;
-                case "DELETE":
-                    HandleDelete(clientSocket, req.Url, req.Body);
-                    break;
-                default:
-                    HandleNotFoundRequest(clientSocket);
-                    break;
+                Console.WriteLine(e);
             }
         }
         private void HandleGet(Socket clientSocket, string url, string body)
@@ -82,62 +84,53 @@ namespace MTCG.src.HTTP
             switch (url)
             {
                 case "/users/{username}":
-                    // _dh.RetrieveData()
-                    var response = new Response();
-                    SendJsonResponse(clientSocket, "users/id");
+                    _dh.RetrieveUserData(clientSocket, body);
                     break;
                 case "/cards":
-                    // _dh.ShowCards()
-                    SendJsonResponse(clientSocket, "cards");
+                    _dh.ShowCards(clientSocket, body);
                     break;
                 case "/deck":
-                    // _dh.ShowDeck()
-                    SendJsonResponse(clientSocket, "deck");
+                    _dh.ShowDeck(clientSocket, body);
                     break;
                 case "/stats":
-                    // _dh.RetrieveStats()
-                    SendJsonResponse(clientSocket, "stats");
+                    _dh.RetrieveStats(clientSocket, body);
                     break;
                 case "/scoreboard":
-                    // _dh.RetrieveScoreboard
-                    SendJsonResponse(clientSocket, "scoreboard");
+                    _dh.RetrieveScoreBoard(clientSocket, body);
                     break;
                 case "/tradings":
-                    // _dh.ShowTrades
-                    SendJsonResponse(clientSocket, "tradings");
+                    _dh.ShowDeck(clientSocket, body);
                     break;
                 default:
-                    SendJsonResponse(clientSocket, "default");
                     break;
             }
         }
         private void HandlePost(Socket clientSocket, string url, string body)
         {
-            // var requestData = JsonConvert.DeserializeObject<MyDataModel>(jsonRequest);
             switch (url)
             {
                 case "/users":
-                    SendJsonResponse(clientSocket, _dh.Post.Register(body).ToString());
+                    _dh.Register(clientSocket, body);
                     break;
                 case "/sessions":
+                    _dh.LogIn(clientSocket, body);
                     break;
                 case "/packages":
-                    SendJsonResponse(clientSocket, "packages");
+                    
                     break;
                 case "/transactions/packages":
-                    SendJsonResponse(clientSocket, "transactons/packages");
+
                     break;
                 case "/battles":
-                    SendJsonResponse(clientSocket, "battles");
+
                     break;
                 case "/tradings":
-                    SendJsonResponse(clientSocket, "tradings");
+
                     break;
                 case "/tradings/{tradingdealid}":
-                    SendJsonResponse(clientSocket, "tradings/id");
+
                     break;
                 default:
-                    SendJsonResponse(clientSocket, "default");
                     break;
             }
         }
@@ -146,13 +139,12 @@ namespace MTCG.src.HTTP
             switch (url)
             {
                 case "/users/{username}":
-                    SendJsonResponse(clientSocket, "users");
+                    
                     break;
                 case "/deck":
-                    SendJsonResponse(clientSocket, "deck");
+
                     break;
                 default:
-                    SendJsonResponse(clientSocket, "default");
                     break;
             }
         }
@@ -161,59 +153,26 @@ namespace MTCG.src.HTTP
             switch (url)
             {
                 case "/users/{username}":
-                    SendJsonResponse(clientSocket, "users/id");
+
                     break;
                 case "/deck":
-                    SendJsonResponse(clientSocket, "deck");
+
                     break;
                 default:
-                    SendJsonResponse(clientSocket, "default");
                     break;
             }
         }
 
         private Socket InitSocket()
         {
-            //try
-            //{
             Socket serverSocket = new(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
             serverSocket.Bind(new IPEndPoint(IPAddress.Parse("127.0.0.1"), _port));
             serverSocket.Listen(_maxConn);
             return serverSocket;
-            //}
-            //catch (Exception e)
-            //{
-            //    Console.WriteLine($"{e.Message}");
-            //    return null;
-            //}
         }
         private async Task<Socket> AcceptAsync(Socket serverSocket)
         {
             return await Task.Factory.FromAsync(serverSocket.BeginAccept, serverSocket.EndAccept, null);
         }
-
-        /*
-        private void HandleNotFoundRequest(Socket clientSocket)
-        {
-            // Respond with a 404 Not Found error
-            string response = "HTTP/1.1 404 Not Found\r\nContent-Type: text/plain\r\n\r\nNot Found";
-            byte[] responseBuffer = Encoding.ASCII.GetBytes(response);
-            SendResponse(clientSocket, responseBuffer);
-        }
-        private void SendJsonResponse(Socket clientSocket, string message)
-        {
-            var responseData = new { Message = message };
-            string jsonResponse = JsonConvert.SerializeObject(responseData);
-            byte[] responseBuffer = Encoding.ASCII.GetBytes($"HTTP/1.1 {jsonResponse}");
-            SendResponse(clientSocket, responseBuffer);
-        }
-        private void SendResponse(Socket clientSocket, byte[] responseBuffer)
-        {
-            clientSocket.Send(responseBuffer);
-            clientSocket.Shutdown(SocketShutdown.Both);
-            clientSocket.Close();
-        }
-        */
-
     }
 }

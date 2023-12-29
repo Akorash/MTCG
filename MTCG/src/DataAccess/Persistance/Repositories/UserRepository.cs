@@ -33,6 +33,7 @@ namespace MTCG.src.DataAccess.Persistance.Repositories
         public User GetUserByUsername(string username)
         {
             UserDTO model = Context.GetUserByUsername(username);
+            Console.WriteLine("Debug: Successfully got a DTO back");
             if (model == null) 
             {
                 return null;

@@ -76,7 +76,7 @@ namespace MTCG.src.DataAccess.Persistance
                             // Create a User object and map data from the reader
                             var user = new UserDTO {
                                 Id = reader.GetInt32(reader.GetOrdinal("id")),
-                                Username = reader.GetString(reader.GetOrdinal("name")),
+                                Username = reader.GetString(reader.GetOrdinal("username")),
                                 Password = reader.GetString(reader.GetOrdinal("password"))
                             };
                             Console.WriteLine(user.Id + "\n" + user.Username + "\n" + user.Password + "\n"); // TODO: Remove debug

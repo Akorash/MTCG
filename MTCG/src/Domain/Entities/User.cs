@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
@@ -16,7 +17,7 @@ namespace MTCG.src.Domain.Entities
     {
         private readonly int START_COINS = 20;
         private readonly int CARD_PRICE = 5;
-        private VerificationHandler _Verif;
+        private readonly VerificationHandler _Verif;
         private readonly string _authString;
         private List<Card> _stack;
         private int _coins;
@@ -47,20 +48,18 @@ namespace MTCG.src.Domain.Entities
 
         public void Register()
         {
-            // TODO Invlid username
-
-            // Check if user already exists
+            Console.WriteLine("Debug: Atempting to Register User...");
             using (var unitOfWork = new UnitOfWork())
             {
-                // If user with the same username exists
-                if (unitOfWork.Users.GetUserByUsername(Username) != null)
+                // Check if user already exists
+                Console.WriteLine("Debug: About to Get User by Username");
+                if (unitOfWork.Users.GetUserByUsername(Username) != null) // If user with the same username exists
                 {
+                    Console.WriteLine("Debug: Inside Duplicate Name if");
                     throw new DuplicateNameException(Username);
                 }
-            }
-            // Signup
-            using (var unitOfWork = new UnitOfWork())
-            {
+                // Signup
+                Console.WriteLine("Debug: Before Signup");
                 unitOfWork.Users.Add(this);
             }
         }
@@ -130,7 +129,7 @@ namespace MTCG.src.Domain.Entities
             }
             return cards;
         }
-        public void Battle()
+        static void Battle()
         {
             // If a player is logged in
             
@@ -139,7 +138,7 @@ namespace MTCG.src.Domain.Entities
         }
         private void BuyPackage() { }
         private bool SuffiCoins() { return _coins >= CARD_PRICE; }
-        private bool CorrectPassword() { return true; }
+        static bool CorrectPassword() { return true; }
     }
 
     internal class VerificationHandler
@@ -159,11 +158,11 @@ namespace MTCG.src.Domain.Entities
             }
             return true;
         }
-        public void UsernameTaken(string username)
+        public static void UsernameTaken(string username)
         {
 
         }
-        public void IncorrectPassword(string password)
+        public static void IncorrectPassword(string password)
         {
 
         }

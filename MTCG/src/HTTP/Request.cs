@@ -30,15 +30,15 @@ namespace MTCG.src.HTTP
         {
             try
             {
-                HandleRequest(message);
+                ParseRequest(message);
             }
             catch (Exception e)
             {
-                // TODO
+                Console.WriteLine(e);
             }   
         }
 
-        private void HandleRequest(string request)
+        private void ParseRequest(string request)
         {
             // Split request into lines
             string[] requestLines = request.Split(new[] { _splitLines }, StringSplitOptions.None);  // Split request into lines
@@ -53,7 +53,7 @@ namespace MTCG.src.HTTP
         }
         private void ParseMethodAndUrl(string method, string url, int amountOfElementsInStartLine)
         {
-            if (amountOfElementsInStartLine <= _startLineElements || amountOfElementsInStartLine >= _startLineElements)
+            if (amountOfElementsInStartLine < _startLineElements || amountOfElementsInStartLine > _startLineElements)
             {
                 throw new ArgumentException();
             }
