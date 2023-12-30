@@ -9,7 +9,7 @@ namespace MTCG
         static async Task Main(string[] args)
         {
             var cntxt = new DBManager();
-            cntxt.GetUserById(1);
+            cntxt.CreateSchema();
             Server MTCG = new(8080, 10);
             await MTCG.StartAsync();
             Console.WriteLine("Press Enter to exit.");

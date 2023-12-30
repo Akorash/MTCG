@@ -4,6 +4,7 @@ using System.Data;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
+using System.Security.Authentication;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
@@ -17,7 +18,6 @@ namespace MTCG.src.Domain.Entities
     {
         private readonly int START_COINS = 20;
         private readonly int CARD_PRICE = 5;
-        private readonly VerificationHandler _Verif;
         private readonly string _authString;
         private List<Card> _stack;
         private int _coins;
@@ -27,7 +27,6 @@ namespace MTCG.src.Domain.Entities
 
         public User()
         {
-            _Verif = new();
             Username = string.Empty;
             Password = string.Empty;
             _authString = string.Empty;
@@ -37,7 +36,6 @@ namespace MTCG.src.Domain.Entities
 
         public User(int? id, string uname, string password)
         {
-            _Verif = new();
             Id = id;
             Username = uname;
             Password = password;
@@ -48,41 +46,39 @@ namespace MTCG.src.Domain.Entities
 
         public void Register()
         {
-            Console.WriteLine("Debug: Atempting to Register User...");
             using (var unitOfWork = new UnitOfWork())
             {
-                // Check if user already exists
-                Console.WriteLine("Debug: About to Get User by Username");
-                if (unitOfWork.Users.GetUserByUsername(Username) != null) // If user with the same username exists
+                if (!Verification.ValidUsername(Username))
                 {
-                    Console.WriteLine("Debug: Inside Duplicate Name if");
+                    throw new ArgumentException();
+                }
+                // Check whether a user with the same username already exists
+                if (unitOfWork.Users.GetUserByUsername(Username) != null)
+                {
                     throw new DuplicateNameException(Username);
                 }
-                // Signup
-                Console.WriteLine("Debug: Before Signup");
+                // If not, sign the user up
                 unitOfWork.Users.Add(this);
             }
         }
 
         public void LogIn()
         {
-            // Invlid username
-            /*
-            if (!_Verif.ValidUsername(Username)) 
+            if (!Verification.ValidUsername(Username))
             {
+                throw new ArgumentException();
             }
-            */
-            using (var unitOfWork = new UnitOfWork()) 
+            using (var unitOfWork = new UnitOfWork())
             {
                 var user = unitOfWork.Users.GetUserByUsername(Username);
-                // User doesn't exist
-                if (user == null) 
+
+                if (user == null) // User doesn't exist
                 {
-                    // throw new 
+                    throw new InvalidOperationException("User not registered");
                 }
-                // Invlid Password
-                if (!_Verif.ValidPassword(Password) || user.Password != Password) {
-                    // throw new 
+                if (!Verification.ValidPassword(Password) || user.Password != Password) // Invlid Password
+                {
+                    throw new InvalidCredentialException();
                 }
             }
         }
@@ -105,7 +101,7 @@ namespace MTCG.src.Domain.Entities
 
                 var deckId = new List<int>();
                 var user = unitOfWork.Users.Get(UserId);
-                                        
+
 
 
                 // For each cardId in deckIds,
@@ -129,42 +125,54 @@ namespace MTCG.src.Domain.Entities
             }
             return cards;
         }
-        static void Battle()
+        public void Battle()
         {
             // If a player is logged in
-            
+
             // Signal the server (Game) to put you on the waiting list
             // And, send the server your deck (?) and Id
         }
-        private void BuyPackage() { }
+        public List<Card> BuyPackage() // Buys a card package with the money of the provided user
+        {
+            // UnauthorizedError --> Check Auth Token
+
+            // Not enough money for buying a card package
+            if (!SuffiCoins())
+            {
+                throw new InvalidOperationException("Insufficient Coins");
+            }
+            // No card package available for buying
+
+            // Check the package table 
+            // Return an array of cards
+            var package = new List<Card>();
+            return package;
+        }
         private bool SuffiCoins() { return _coins >= CARD_PRICE; }
         static bool CorrectPassword() { return true; }
-    }
 
-    internal class VerificationHandler
-    {
-        public VerificationHandler() { }
-        public bool ValidUsername(string username)
+        static class Verification
         {
-            if (username == null) {
-                return false;
+            public static bool ValidUsername(string username)
+            {
+                if (username == null)
+                {
+                    return false;
+                }
+                return true;
             }
-            return true;
-        }
-        public bool ValidPassword(string password)
-        {
-            if (password == null) {
-                return false;
+            public static bool ValidPassword(string password)
+            {
+                if (password == null)
+                {
+                    return false;
+                }
+                return true;
             }
-            return true;
-        }
-        public static void UsernameTaken(string username)
-        {
+            static void IncorrectPassword(string password)
+            {
 
-        }
-        public static void IncorrectPassword(string password)
-        {
-
+            }
         }
     }
 }

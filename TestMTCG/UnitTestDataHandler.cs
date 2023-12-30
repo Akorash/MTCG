@@ -20,7 +20,7 @@ namespace TestMTCG
         [TestMethod]
         private void RequestHandlerLogin()
         {
-            var rh = new RequestHandler();
+            var rh = new ResponseHandler();
             string body = "body";
 
             try 

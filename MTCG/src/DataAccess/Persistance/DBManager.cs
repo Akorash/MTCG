@@ -17,7 +17,6 @@ using System.Xml;
 
 namespace MTCG.src.DataAccess.Persistance
 {
-    // stringBuider, stringConnectionBuilder
     public class DBManager : IDisposable
     {
         public DBManager()
@@ -28,6 +27,10 @@ namespace MTCG.src.DataAccess.Persistance
         {
             GC.SuppressFinalize(this);
         }
+
+        //---------------------------------------------------------------------
+        // /////////////////////////////// User ///////////////////////////////
+        //---------------------------------------------------------------------
         public UserDTO GetUserById(int id)
         {
             using (var connection = new NpgsqlConnection(GetConnectionString()))
@@ -38,7 +41,7 @@ namespace MTCG.src.DataAccess.Persistance
                     return null;
                 }
                 // ConnectionState can also have other values (ex. Broken, Connecting...)
-                else if (connection.State == ConnectionState.Open) { 
+                else if (connection.State == ConnectionState.Open) {
                     using (var cmd = new NpgsqlCommand("SELECT * FROM users WHERE id = @id;", connection))
                     {
                         cmd.Parameters.AddWithValue("@id", id);
@@ -61,7 +64,6 @@ namespace MTCG.src.DataAccess.Persistance
             }
             return null;
         }
-
         public UserDTO GetUserByUsername(string username)
         {
             using (var connection = new NpgsqlConnection(GetConnectionString()))
@@ -96,12 +98,12 @@ namespace MTCG.src.DataAccess.Persistance
                 {
                     using (NpgsqlDataReader reader = cmd.ExecuteReader())
                     {
-                        if (reader != null && reader.Read()) 
+                        if (reader != null && reader.Read())
                         {
                             var allUsers = new List<UserDTO>();
-                            while (reader.Read()) 
+                            while (reader.Read())
                             {
-                                var user = new UserDTO 
+                                var user = new UserDTO
                                 {
                                     Id = reader.GetInt32(reader.GetOrdinal("id")),
                                     Username = reader.GetString(reader.GetOrdinal("name")),
@@ -154,6 +156,10 @@ namespace MTCG.src.DataAccess.Persistance
                 }
             }
         }
+
+        //---------------------------------------------------------------------
+        // /////////////////////////////// Card ///////////////////////////////
+        //---------------------------------------------------------------------
         public CardDTO GetCardById(int id)
         {
             using (var connection = new NpgsqlConnection(GetConnectionString()))
@@ -240,52 +246,118 @@ namespace MTCG.src.DataAccess.Persistance
                 }
             }
         }
-        public void CreateSchema()
+
+        //---------------------------------------------------------------------
+        // ////////////////////////////// Schema //////////////////////////////
+        //---------------------------------------------------------------------
+        public void CreateTableUsers()
         {
             using (var connection = new NpgsqlConnection(GetConnectionString()))
             {
                 connection.Open();
-
                 if (connection != null && connection.State == ConnectionState.Closed) {
                     return;
                 }
-                using (var cmd = new NpgsqlCommand("CREATE TABLE users(id SERIAL PRIMARY KEY, username VARCHAR(50) UNIQUE NOT NULL, password VARCHAR(255) NOT NULL);", connection)) 
+                using (var cmd = new NpgsqlCommand("CREATE TABLE IF NOT EXISTS  users (" +
+                                                        "user_id SERIAL PRIMARY KEY, " +
+                                                        "username VARCHAR(50) UNIQUE NOT NULL, " +
+                                                        "password VARCHAR(255) NOT NULL" +
+                                                    ");", connection))
                 {
                     cmd.ExecuteNonQuery();
                 }
             }
+            Console.WriteLine("Database: Table users was created successfully.\n");
         }
-        public void CreateUsersTable()
+        public void CreateTableCards()
         {
             using (var connection = new NpgsqlConnection(GetConnectionString()))
             {
                 connection.Open();
-
-                if (connection != null && connection.State == ConnectionState.Closed)
-                {
+                if (connection != null && connection.State == ConnectionState.Closed) {
                     return;
                 }
-                using (var cmd = new NpgsqlCommand("CREATE TABLE users(id SERIAL PRIMARY KEY, username VARCHAR(50) UNIQUE NOT NULL, password VARCHAR(255) NOT NULL);", connection))
+                using (var cmd = new NpgsqlCommand("CREATE TABLE IF NOT EXISTS  cards (" +
+                                                        "card_id SERIAL PRIMARY KEY, " +
+                                                        "type VARCHAR(50) NOT NULL, " +
+                                                        "damage INT NOT NULL" +
+                                                    ");", connection))
                 {
                     cmd.ExecuteNonQuery();
                 }
             }
+            Console.WriteLine("Database: Table cards was created successfully.\n");
         }
-        public void CreateCardsTable()
+        public void CreateTablePackages()
         {
             using (var connection = new NpgsqlConnection(GetConnectionString()))
             {
                 connection.Open();
-
                 if (connection != null && connection.State == ConnectionState.Closed)
                 {
                     return;
                 }
-                using (var cmd = new NpgsqlCommand("CREATE TABLE cards(id SERIAL PRIMARY KEY, type VARCHAR(50) NOT NULL, damage INT() NOT NULL);", connection))
+                using (var cmd = new NpgsqlCommand("CREATE TABLE IF NOT EXISTS packages (" +
+                                                        "package_id SERIAL PRIMARY KEY, " +
+                                                        "fk_card1 BIGINT, " +
+                                                        "fk_card2 BIGINT, " +
+                                                        "fk_card3 BIGINT, " +
+                                                        "fk_card4 BIGINT, " +
+                                                        "fk_card5 BIGINT, " +
+                                                        "FOREIGN KEY(fk_card1) REFERENCES cards(card_id), " +
+                                                        "FOREIGN KEY(fk_card2) REFERENCES cards(card_id), " +
+                                                        "FOREIGN KEY(fk_card3) REFERENCES cards(card_id), " +
+                                                        "FOREIGN KEY(fk_card4) REFERENCES cards(card_id), " +
+                                                        "FOREIGN KEY(fk_card5) REFERENCES cards(card_id)" +
+                                                    ");", connection))
                 {
                     cmd.ExecuteNonQuery();
                 }
             }
+            Console.WriteLine("Database: Table packages was created successfully.\n");
+        }
+        public void CreateTableHighscores()
+        {
+            using (var connection = new NpgsqlConnection(GetConnectionString()))
+            {
+                connection.Open();
+                if (connection != null && connection.State == ConnectionState.Closed)
+                {
+                    return;
+                }
+                using (var cmd = new NpgsqlCommand("CREATE TABLE IF NOT EXISTS highscores (" +
+                                                        "highscore_id SERIAL PRIMARY KEY," +
+                                                        "fk_user BIGINT, " +
+                                                        "elo INT NOT NULL, " +
+                                                        "wins INT NOT NULL, " +
+                                                        "loses INT NOT NULL, " +
+                                                        "FOREIGN KEY(fk_user) REFERENCES users(user_id)" +
+                                                    ");", connection))
+                {
+                    cmd.ExecuteNonQuery();
+                }
+            }
+            Console.WriteLine("Database: Table highscores was created successfully.\n");
+        }
+        public void CreateTableSessions()
+        {
+            using (var connection = new NpgsqlConnection(GetConnectionString()))
+            {
+                connection.Open();
+                if (connection != null && connection.State == ConnectionState.Closed) {
+                    return;
+                }
+                using (var cmd = new NpgsqlCommand("CREATE TABLE IF NOT EXISTS  sessions (" +
+                                                        "session_id SERIAL PRIMARY KEY" +
+                                                        "fk_user BIGINT, " +
+                                                        "loginTime, " +
+                                                        "ipAdress, " +
+                                                    ");", connection))
+                {
+                    cmd.ExecuteNonQuery();
+                }
+            }
+            Console.WriteLine("Database: Table sessions was created successfully.\n");
         }
         public void FillTableUsers()
         {
@@ -302,28 +374,51 @@ namespace MTCG.src.DataAccess.Persistance
                 }
             }
         }
-        public void CreateTableCards()
+        public void CreateSchema()
+        {
+            try
+            {
+                DropAll();
+
+                CreateTableUsers();
+                CreateTableCards();
+                CreateTablePackages();
+                CreateTableHighscores();
+                // CreateTableSessions();
+
+                FillTableUsers();
+
+            }
+            catch (Exception e) 
+            {   
+                Console.WriteLine(e.Message);
+            }
+        }
+        public void DropAll()
         {
             using (var connection = new NpgsqlConnection(GetConnectionString()))
             {
                 connection.Open();
-                if (connection != null && connection.State == ConnectionState.Closed)
-                {
+                if (connection != null && connection.State == ConnectionState.Closed) {
                     return;
                 }
-                using (var cmd = new NpgsqlCommand(";", connection))
+                using (var cmd = new NpgsqlCommand("DROP TABLE IF EXISTS sessions, packages, highscores, cards, users;", connection))
                 {
                     cmd.ExecuteNonQuery();
                 }
             }
         }
-          
+        //---------------------------------------------------------------------
         private void SetSearchPath()
         {
             using (var connection = new NpgsqlConnection(GetConnectionString()))
             {
                 connection.Open();
-                using (var cmd = new NpgsqlCommand("SET search_path TO mtcg;", connection)) {
+                if (connection != null && connection.State == ConnectionState.Closed) {
+                    return;
+                }
+                using (var cmd = new NpgsqlCommand("SET search_path TO mtcg;", connection))
+                {
                     cmd.ExecuteNonQuery();
                 }
             }

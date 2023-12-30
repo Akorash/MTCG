@@ -15,14 +15,14 @@ namespace MTCG.src.HTTP
     {
         private readonly int _port;
         private readonly int _maxConn;
-        private readonly RequestHandler _dh; // Manages requests and sends the corresponding response
+        private readonly ResponseHandler _rh; // Manages requests and sends the corresponding response
 
         public Server(int port, int maxConnections)
         {
             _port = port;
             _maxConn = maxConnections;
 
-            _dh = new RequestHandler();
+            _rh = new ResponseHandler();
         }
 
         public async Task StartAsync()
@@ -84,24 +84,25 @@ namespace MTCG.src.HTTP
             switch (url)
             {
                 case "/users/{username}":
-                    _dh.RetrieveUserData(clientSocket, body);
+                    _rh.RetrieveUserData(clientSocket, body);
                     break;
                 case "/cards":
-                    _dh.ShowCards(clientSocket, body);
+                    _rh.ShowCards(clientSocket, body);
                     break;
                 case "/deck":
-                    _dh.ShowDeck(clientSocket, body);
+                    _rh.ShowDeck(clientSocket, body);
                     break;
                 case "/stats":
-                    _dh.RetrieveStats(clientSocket, body);
+                    _rh.RetrieveStats(clientSocket, body);
                     break;
                 case "/scoreboard":
-                    _dh.RetrieveScoreBoard(clientSocket, body);
+                    _rh.RetrieveScoreBoard(clientSocket, body);
                     break;
                 case "/tradings":
-                    _dh.ShowDeck(clientSocket, body);
+                    _rh.ShowDeck(clientSocket, body);
                     break;
                 default:
+                    _rh.NotFound(clientSocket, body);
                     break;
             }
         }
@@ -110,16 +111,16 @@ namespace MTCG.src.HTTP
             switch (url)
             {
                 case "/users":
-                    _dh.Register(clientSocket, body);
+                    _rh.Register(clientSocket, body);
                     break;
                 case "/sessions":
-                    _dh.LogIn(clientSocket, body);
+                    _rh.LogIn(clientSocket, body);
                     break;
                 case "/packages":
                     
                     break;
                 case "/transactions/packages":
-
+                    _rh.AquirePackage(clientSocket, body);
                     break;
                 case "/battles":
 
@@ -131,6 +132,7 @@ namespace MTCG.src.HTTP
 
                     break;
                 default:
+                    _rh.NotFound(clientSocket, body);
                     break;
             }
         }
@@ -145,6 +147,7 @@ namespace MTCG.src.HTTP
 
                     break;
                 default:
+                    _rh.NotFound(clientSocket, body);
                     break;
             }
         }
@@ -159,6 +162,7 @@ namespace MTCG.src.HTTP
 
                     break;
                 default:
+                    _rh.NotFound(clientSocket, body);
                     break;
             }
         }
