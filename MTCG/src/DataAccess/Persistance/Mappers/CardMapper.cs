@@ -18,7 +18,8 @@ namespace MTCG.src.DataAccess.Persistance.Mappers
 
         public CardDTO Map(Card card)
         {
-            return new CardDTO() {
+            return new CardDTO()
+            {
                 Id = card.Id,
                 Type = card.Type,
                 Damage = card.Damage

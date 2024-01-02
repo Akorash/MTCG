@@ -3,13 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-
-using MTCG.src.DataAccess.Persistance.Mappers;
-using MTCG.src.DataAccess.Persistance.Repositories;
-using MTCG.src.DataAccess.Persistance;
-using MTCG.src.Domain;
-using MTCG.src.HTTP;
-using MTCG.src.Domain.Entities;
 using System.Net;
 using System.Net.Sockets;
 using System.Data;
@@ -17,6 +10,15 @@ using System.ComponentModel;
 using System.Security.Authentication;
 using System.Reflection;
 using Newtonsoft.Json;
+using System.Runtime.InteropServices.ObjectiveC;
+
+using MTCG.src.DataAccess.Persistance.Mappers;
+using MTCG.src.DataAccess.Persistance.Repositories;
+using MTCG.src.DataAccess.Persistance.DTOs;
+using MTCG.src.DataAccess.Persistance;
+using MTCG.src.Domain.Entities;
+using MTCG.src.Domain;
+using MTCG.src.HTTP;
 
 namespace MTCG.src.HTTP
 {
@@ -31,11 +33,25 @@ namespace MTCG.src.HTTP
     public class ResponseHandler
     {
         private HttpStatusCode _status;
+        private BattleQueue _battleQueue;
+        private readonly object _battleLock;
         public ResponseHandler() { }
-        // Post Functions ----------
-        public void Register(Socket clientSocket, string body)
+        public ResponseHandler(object battleLock, BattleQueue battleQueue) 
         {
-            var user = new User(null, GetUsername(body), GetPassword(body));
+            _battleLock = battleLock;
+            _battleQueue = battleQueue;
+        }
+        //---------------------------------------------------------------------
+        // /////////////////////////////// POST ///////////////////////////////
+        //---------------------------------------------------------------------
+
+        //------------------------- Authentification --------------------------
+        public void Register(Socket clientSocket, string reqBody)
+        {
+            Console.WriteLine($"Debug: {reqBody}");
+            var user = JsonConvert.DeserializeObject<User>(reqBody);
+
+            // var user = new User(null, GetUsername(reqBody), GetPassword(reqBody));
             try
             {
                 user.Register();
@@ -51,17 +67,19 @@ namespace MTCG.src.HTTP
                 Console.WriteLine($"Registration failed: {e.Message}\n");
                 _status = HttpStatusCode.NotFound;
             }
-            // TODO make SendJsonRes... part of the ResHandler
-            var response = new Response(_status);
-            response.SendJsonResponse(clientSocket, _status.ToString());
+            var response = new Response();
+            response.SendJsonResponse(clientSocket, _status, user);
         }
-        public void LogIn(Socket clientSocket, string body)
+        public void LogIn(Socket clientSocket, string reqBody)
         {
-            var user = new User(null, GetUsername(body), GetPassword(body));
+            object body = null; // Response body
+
+            var user = JsonConvert.DeserializeObject<User>(reqBody);
             try
             {
                 user.LogIn();
                 _status = HttpStatusCode.OK;
+                body = user;
             }
             catch (ArgumentException e)
             {
@@ -83,9 +101,10 @@ namespace MTCG.src.HTTP
                 Console.WriteLine($"Login failed: {e.Message}\n");
                 _status = HttpStatusCode.NotFound;
             }
-            var response = new Response(_status);
-            response.SendJsonResponse(clientSocket, _status.ToString());
+            var response = new Response();
+            response.SendJsonResponse(clientSocket, _status, body);
         }
+        //---------------------------------------------------------------------
         public void NewPackage(Socket clientSocket, string body)
         {
             try 
@@ -100,33 +119,61 @@ namespace MTCG.src.HTTP
                 _status = HttpStatusCode.NotFound;
             }
         }
-        public void AquirePackage(Socket clientSocket, string body)
+        public void AquirePackage(Socket clientSocket, string reqBody)
         {
+            object body = null; // Response body
             try
             {
-                
-                var user = new User(null, GetUsername(body), GetPassword(body));
-                body = JsonConvert.SerializeObject(user.BuyPackage());
-
+                var user = JsonConvert.DeserializeObject<User>(reqBody);
+                body = user.BuyPackage();
+                Console.WriteLine(body);
             }
             catch (UnauthorizedAccessException e)
             {
-                Console.WriteLine($"Failed to aquire package: {e.Message}");
+                Console.WriteLine($"Failed to aquire package due to unauthorized access: {e.Message}");
                 _status = HttpStatusCode.Unauthorized;
             }
             catch (InvalidOperationException e)
             {
-                Console.WriteLine($"Failed to aquire package: {e.Message}");
+                Console.WriteLine($"Failed to aquire package due to insufficient coins: {e.Message}");
                 _status = HttpStatusCode.Forbidden;
             }
             catch (Exception e)
             {
                 Console.WriteLine($"Failed to aquire package: {e.Message}");
                 _status = HttpStatusCode.NotFound;
-            }        
+            }
+            var response = new Response();
+            response.SendJsonResponse(clientSocket, _status, body);
         }
-        public void Battles(Socket clientSocket, string body)
+        public void Battle(Socket clientSocket, string reqBody)
         {
+            try 
+            {
+                var user = JsonConvert.DeserializeObject<User>(reqBody); L
+
+                _status = HttpStatusCode.OK;
+            }
+            catch (UnauthorizedAccessException e) 
+            {
+                Console.WriteLine($"Battle attempt falied: {e.Message}");
+               _status = HttpStatusCode.Unauthorized;
+            }
+
+            /*
+      summary: Enters the lobby to start a battle.
+            
+      description: If there is already another user in the lobby, the battle will start immediately. 
+            Otherwise the request will wait for another user to enter.
+      responses:
+        '200':
+          description: The battle has been carried out successfully.
+          content:
+            text/plain:
+              schema:
+                type: string
+                description: The battle log.
+             */
         }
         public void Tradings(Socket clientSocket, string body)
         {
@@ -134,6 +181,9 @@ namespace MTCG.src.HTTP
         public void TradingsWithId(Socket clientSocket, string body)
         {
         }
+        //---------------------------------------------------------------------
+        // /////////////////////////////// GET ////////////////////////////////
+        //---------------------------------------------------------------------
         public void RetrieveUserData(Socket clientSocket, string body)
         {
         }
@@ -158,8 +208,8 @@ namespace MTCG.src.HTTP
         public void NotFound(Socket clientSocket, string body)
         {
             _status = HttpStatusCode.NotFound;
-            var response = new Response(_status);
-            response.SendJsonResponse(clientSocket, _status.ToString());
+            var response = new Response();
+            response.SendJsonResponse(clientSocket, _status, body);
         }
         public string GetUsername(string body)
         {

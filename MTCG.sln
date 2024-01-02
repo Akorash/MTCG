@@ -7,6 +7,14 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MTCG", "MTCG\MTCG.csproj", 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestMTCG", "TestMTCG\TestMTCG.csproj", "{3528D49B-44DD-49B5-AB44-EB34268F58E5}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{8CE06DFE-D764-42B1-9FE8-AAEE1B554484}"
+	ProjectSection(SolutionItems) = preProject
+		MTCG\arc42-template-EN.md = MTCG\arc42-template-EN.md
+		MTCG\Checklist.xlsx = MTCG\Checklist.xlsx
+		MTCG\mtcg-api.yaml = MTCG\mtcg-api.yaml
+		Sources.txt = Sources.txt
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU

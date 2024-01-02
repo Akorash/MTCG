@@ -5,7 +5,6 @@ using System.Linq;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
-
 using MTCG.src.HTTP;
 
 namespace TestMTCG
@@ -16,16 +15,19 @@ namespace TestMTCG
         public UnitTestDataHandler() { }
 
         // https://stackoverflow.com/questions/741029/best-way-to-test-exceptions-with-assert-to-ensure-they-will-be-thrown
-
+        /*
         [TestMethod]
-        private void RequestHandlerLogin()
+        private async Task RequestHandlerLogin()
         {
             var rh = new ResponseHandler();
             string body = "body";
 
             try 
             {
-                rh.LogIn(body);
+                var server = new Server(8080, 10);
+                await server.StartAsync();
+
+                rh.LogIn()
                 Assert.Fail("An exception should have been thrown");
             }
             catch (DuplicateNameException e) 
@@ -37,5 +39,6 @@ namespace TestMTCG
                 Assert.Fail($"Unexpected exception of type {0} caugth: {1}", e.GetType(), e.Message);
             }
         }
+        */
     }
 }

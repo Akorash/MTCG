@@ -5,18 +5,18 @@ using System.Text;
 using System.Threading.Tasks;
 
 using MTCG.src.DataAccess.Core.Repositories;
+using MTCG.src.DataAccess.Persistance;
 using MTCG.src.DataAccess.Persistance.DTOs;
 using MTCG.src.DataAccess.Persistance.Mappers;
-using MTCG.src.DataAccess.Persistance;
 using MTCG.src.Domain.Entities;
 
 namespace MTCG.src.DataAccess.Persistance.Repositories
 {
     internal class CardRepository : ICardRepository
     {
-        protected readonly DBManager DbManager;
+        protected readonly PostgreSql DbManager;
         protected readonly CardMapper Mapper;
-        public CardRepository(DBManager manager, CardMapper mapper)
+        public CardRepository(PostgreSql manager, CardMapper mapper)
         {
             DbManager = manager;
             Mapper = mapper;
@@ -30,6 +30,12 @@ namespace MTCG.src.DataAccess.Persistance.Repositories
         public IEnumerable<Card> GetAll()
         {
             IEnumerable<CardDTO> dtos = DbManager.GetAllCards();
+            return dtos.Select(dto => Mapper.Map(dto));
+        }
+        public IEnumerable<Card> GetPackage()
+        {
+            IEnumerable<CardDTO> dtos = DbManager.GetPackage();
+            Console.WriteLine();
             return dtos.Select(dto => Mapper.Map(dto));
         }
         public void Add(Card entity)

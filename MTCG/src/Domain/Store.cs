@@ -15,7 +15,7 @@ namespace MTCG.src.Domain
         public void ManageTrading(Card toTrade, List<Card> deckOther) { }
         private Card Trade()
         {
-            Card _toTrade = new(1, "monster", 30);
+            Card _toTrade = new(1, "Fire", "Spell", null, 30);
             return _toTrade;
         }
         private void AddCard(Card card) { }
@@ -23,7 +23,7 @@ namespace MTCG.src.Domain
         private Card RandomCard()
         {
             int _randomId = 1;
-            Card _randomCard = new(_randomId, "monster", 30);
+            var _randomCard = new Card(_randomId, "Normal", "Monster", "Kraken", 30);
             return _randomCard;
         }
 

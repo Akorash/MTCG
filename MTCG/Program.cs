@@ -8,10 +8,15 @@ namespace MTCG
     {
         static async Task Main(string[] args)
         {
-            var cntxt = new DBManager();
+            // Database
+            var cntxt = new PostgreSql();
             cntxt.CreateSchema();
-            Server MTCG = new(8080, 10);
+
+            // Web Api (Server)
+            var MTCG = new Server(8080, 10);
             await MTCG.StartAsync();
+
+            // Exit
             Console.WriteLine("Press Enter to exit.");
             Console.ReadLine();
         }

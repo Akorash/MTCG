@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Newtonsoft.Json;
 using MTCG.src.Domain;
 using MTCG.src.HTTP;
+using System.Collections.Concurrent;
 
 namespace MTCG.src.HTTP
 {
@@ -16,21 +17,27 @@ namespace MTCG.src.HTTP
         private readonly int _port;
         private readonly int _maxConn;
         private readonly ResponseHandler _rh; // Manages requests and sends the corresponding response
-
+        private BattleQueue _battleQueue;
+        private readonly object _queueLock;
         public Server(int port, int maxConnections)
         {
             _port = port;
             _maxConn = maxConnections;
 
-            _rh = new ResponseHandler();
+            _rh = new ResponseHandler(new object(), new BattleQueue());
+            _battleQueue = new BattleQueue();
+            _queueLock = new object();
         }
 
         public async Task StartAsync()
         {
             try
             {
-                Socket serverSocket = InitSocket(); // Bind and Listen
+                var serverSocket = InitSocket(); // Bind and Listen
                 Console.WriteLine($"Server is listening on port {_port} with a maximum of {_maxConn} connections...");
+
+                var battleQueue = new BattleQueue(); // For Matchmaking further on
+
                 while (true) // Listen and Accept --> Start new Task for each new client
                 {
                     Socket clientSocket = await AcceptAsync(serverSocket);
@@ -81,6 +88,7 @@ namespace MTCG.src.HTTP
         }
         private void HandleGet(Socket clientSocket, string url, string body)
         {
+            Console.WriteLine($"Debug: {body}");
             switch (url)
             {
                 case "/users/{username}":
@@ -108,6 +116,7 @@ namespace MTCG.src.HTTP
         }
         private void HandlePost(Socket clientSocket, string url, string body)
         {
+            Console.WriteLine($"Debug: {body}");
             switch (url)
             {
                 case "/users":
@@ -123,7 +132,7 @@ namespace MTCG.src.HTTP
                     _rh.AquirePackage(clientSocket, body);
                     break;
                 case "/battles":
-
+                    _rh.Battle(clientSocket, body);
                     break;
                 case "/tradings":
 
@@ -177,6 +186,10 @@ namespace MTCG.src.HTTP
         private async Task<Socket> AcceptAsync(Socket serverSocket)
         {
             return await Task.Factory.FromAsync(serverSocket.BeginAccept, serverSocket.EndAccept, null);
+        }
+        private void Battle()
+        {
+
         }
     }
 }

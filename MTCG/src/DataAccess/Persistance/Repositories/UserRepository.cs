@@ -2,21 +2,20 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-
-using MTCG.src.DataAccess.Persistance.DTOs;
-using MTCG.src.DataAccess.Persistance.Mappers;
 using MTCG.src.DataAccess.Core.Repositories;
 using MTCG.src.Domain.Entities;
 using MTCG.src.DataAccess.Core;
 using System.Reflection;
+using MTCG.src.DataAccess.Persistance.DTOs;
+using MTCG.src.DataAccess.Persistance.Mappers;
 
 namespace MTCG.src.DataAccess.Persistance.Repositories
 {
     public class UserRepository : IUserRepository
     {
-        protected readonly DBManager Context;
+        protected readonly PostgreSql Context;
         protected readonly UserMapper Mapper;
-        public UserRepository(DBManager context, UserMapper mapper)
+        public UserRepository(PostgreSql context, UserMapper mapper)
         {
             Context = context;
             Mapper = mapper;

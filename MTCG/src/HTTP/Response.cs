@@ -9,24 +9,22 @@ namespace MTCG.src.HTTP
     public class Response
     {
         private readonly string _newLine = "\r\n";
-        private readonly string _version = "1.1";
         private readonly string _protocol = "HTTP";
-        private readonly string _headerContentType = $"Content-Type: application/json";
-        private string _headerContentLength;
+        private readonly string _version = "1.1";
+        private readonly string _headerContentType = "Content-Type: application/json";
+        private string _headerContentLength = "Content-Length: ";
         private HttpStatusCode _status;
-        public Response(HttpStatusCode status)
+        public Response() { }
+        public void SendJsonResponse(Socket clientSocket, HttpStatusCode status, object? body)
         {
             _status = status;
-            _headerContentLength = default;
-        }
-        public void SendJsonResponse(Socket clientSocket, string message)
-        {
+
             // Object to json
-            var responseData = new { Message = message };
+            var responseData = new {Message = body};
             string jsonResponse = JsonConvert.SerializeObject(responseData);
 
             // Set content length
-            _headerContentLength = $"Content-Length: {jsonResponse.Length}";
+            _headerContentLength += $"{jsonResponse.Length}";
 
             // Send response
             byte[] responseBuffer = Encoding.ASCII.GetBytes($"{_protocol}/{_version} {((int)_status)}{_newLine}" +

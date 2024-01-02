@@ -5,18 +5,17 @@ using System.Text;
 using System.Threading.Tasks;
 
 using MTCG.src.DataAccess.Persistance.Repositories;
-using MTCG.src.DataAccess.Persistance.Mappers;
 using MTCG.src.DataAccess.Core.Repositories;
 using MTCG.src.DataAccess.Core;
 using MTCG.src.DataAccess;
 using MTCG.src.HTTP;
-
+using MTCG.src.DataAccess.Persistance.Mappers;
 
 namespace MTCG.src.DataAccess.Persistance
 {
     internal class UnitOfWork : IUnitOfWork
     {
-        private readonly DBManager _manager;
+        private readonly PostgreSql _manager;
         private readonly UserMapper _userMapper;
         private readonly CardMapper _cardMapper;
 

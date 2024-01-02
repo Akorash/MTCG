@@ -11,6 +11,7 @@ using Microsoft.Extensions.Configuration;
 using MTCG.src.DataAccess.Persistance;
 using MTCG.src.DataAccess.Persistance.Mappers;
 using MTCG.src.DataAccess.Persistance.Repositories;
+using Newtonsoft.Json;
 
 namespace MTCG.src.Domain.Entities
 {
@@ -61,7 +62,6 @@ namespace MTCG.src.Domain.Entities
                 unitOfWork.Users.Add(this);
             }
         }
-
         public void LogIn()
         {
             if (!Verification.ValidUsername(Username))
@@ -110,7 +110,6 @@ namespace MTCG.src.Domain.Entities
             }
             return new List<Card>();
         }
-
         private string GetCardIds(List<Card> list, int length)
         {
             if (list.Count <= 0 || list == null)
@@ -132,23 +131,25 @@ namespace MTCG.src.Domain.Entities
             // Signal the server (Game) to put you on the waiting list
             // And, send the server your deck (?) and Id
         }
-        public List<Card> BuyPackage() // Buys a card package with the money of the provided user
+        public List<Card> BuyPackage()
         {
-            // UnauthorizedError --> Check Auth Token
+            // TODO UnauthorizedError --> Check Auth Token
 
-            // Not enough money for buying a card package
-            if (!SuffiCoins())
-            {
+            if (!SufficientCoins()) {
                 throw new InvalidOperationException("Insufficient Coins");
             }
-            // No card package available for buying
 
-            // Check the package table 
-            // Return an array of cards
             var package = new List<Card>();
+            using (var unitOfWork = new UnitOfWork())
+            {
+                package = unitOfWork.Cards.GetPackage().ToList(); // GetPackage() returns IEnumerable<Card>, hence the .ToList()
+                if (package == null) {
+                    throw new Exception("No card package available for buying");
+                }
+            }
             return package;
         }
-        private bool SuffiCoins() { return _coins >= CARD_PRICE; }
+        private bool SufficientCoins() { return _coins >= CARD_PRICE; }
         static bool CorrectPassword() { return true; }
 
         static class Verification
