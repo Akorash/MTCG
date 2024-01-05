@@ -22,7 +22,7 @@ namespace MTCG.src.DataAccess.Persistance.Repositories
             Mapper = mapper;
         }
 
-        public Card Get(int id)
+        public Card Get(Guid id)
         {
             CardDTO model = DbManager.GetCardById(id);
             return Mapper.Map(model);
@@ -43,7 +43,11 @@ namespace MTCG.src.DataAccess.Persistance.Repositories
             CardDTO dto = Mapper.Map(entity);
             DbManager.AddCard(dto);
         }
-        public void Delete(int id)
+        public void UpdateUser(Guid id, Guid user_id)
+        {
+            DbManager.UpdateUserInCard(id, user_id);
+        }
+        public void Delete(Guid id)
         {
             if (id != null) {
                 DbManager.DeleteCard(id);

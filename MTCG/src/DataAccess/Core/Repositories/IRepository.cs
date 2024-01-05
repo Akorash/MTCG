@@ -9,13 +9,11 @@ namespace MTCG.src.DataAccess.Core.Repositories
 {
     public interface IRepository<T>
     {
-        // Async, just not written in the name
-        // Generic CRUD functions
-        public T Get(int id);
+        public T Get(Guid id);
         public IEnumerable<T> GetAll();
 
         public void Add(T model);
 
-        public void Delete(int id);
+        public void Delete(Guid id);
     }
 }

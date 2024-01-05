@@ -24,9 +24,9 @@ namespace MTCG.src.HTTP
             _port = port;
             _maxConn = maxConnections;
 
-            _rh = new ResponseHandler(new object(), new BattleQueue());
             _battleQueue = new BattleQueue();
             _queueLock = new object();
+            _rh = new ResponseHandler(_queueLock, _battleQueue);
         }
 
         public async Task StartAsync()

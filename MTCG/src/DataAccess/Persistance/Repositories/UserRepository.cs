@@ -20,7 +20,7 @@ namespace MTCG.src.DataAccess.Persistance.Repositories
             Context = context;
             Mapper = mapper;
         }
-        public User Get(int id)
+        public User Get(Guid id)
         {
             UserDTO model = Context.GetUserById(id);
             if (model == null)
@@ -48,12 +48,13 @@ namespace MTCG.src.DataAccess.Persistance.Repositories
             }
             return dtos.Select(dto => Mapper.Map(dto));
         }
+
         public void Add(User entity)
         {
             UserDTO dto = Mapper.Map(entity);
             Context.AddUser(dto);
         }
-        public void Delete(int id)
+        public void Delete(Guid id)
         {
             if (id != null)
             {

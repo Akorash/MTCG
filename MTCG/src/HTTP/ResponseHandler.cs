@@ -105,12 +105,12 @@ namespace MTCG.src.HTTP
             response.SendJsonResponse(clientSocket, _status, body);
         }
         //---------------------------------------------------------------------
-        public void NewPackage(Socket clientSocket, string body)
+        public void NewPackage(Socket clientSocket, string reqBody)
         {
             try 
             {
-                var user = new User(null, GetUsername(body), GetPassword(body));
-                user.BuyPackage(); // TODO replace with CreatePackage()
+                var user = JsonConvert.DeserializeObject<User>(reqBody);
+                user.CreatePackage(); // TODO replace with CreatePackage()
                 _status = HttpStatusCode.OK;
             }
             catch (Exception e)
@@ -150,8 +150,8 @@ namespace MTCG.src.HTTP
         {
             try 
             {
-                var user = JsonConvert.DeserializeObject<User>(reqBody); L
-
+                var user = JsonConvert.DeserializeObject<User>(reqBody);
+                user.Battle();
                 _status = HttpStatusCode.OK;
             }
             catch (UnauthorizedAccessException e) 
@@ -175,52 +175,45 @@ namespace MTCG.src.HTTP
                 description: The battle log.
              */
         }
-        public void Tradings(Socket clientSocket, string body)
+        public void Tradings(Socket clientSocket, string reqBody)
         {
         }
-        public void TradingsWithId(Socket clientSocket, string body)
+        public void TradingsWithId(Socket clientSocket, string reqBody)
         {
         }
         //---------------------------------------------------------------------
         // /////////////////////////////// GET ////////////////////////////////
         //---------------------------------------------------------------------
-        public void RetrieveUserData(Socket clientSocket, string body)
+        public void RetrieveUserData(Socket clientSocket, string reqBody)
         {
+            var user = JsonConvert.DeserializeObject<User>(reqBody);
         }
-        public void ShowDeck(Socket clientSocket, string body)
+        public void ShowDeck(Socket clientSocket, string reqBody)
         {
-            var user = new User();
+            var user = JsonConvert.DeserializeObject<User>(reqBody);
+
         }
-        public void RetrieveStats(Socket clientSocket, string body)
+        public void RetrieveStats(Socket clientSocket, string reqBody)
         {
+            var user = JsonConvert.DeserializeObject<User>(reqBody);
         }
-        public void RetrieveScoreBoard(Socket clientSocket, string body)
+        public void RetrieveScoreBoard(Socket clientSocket, string reqBody)
         {
+            var user = JsonConvert.DeserializeObject<User>(reqBody);
         }
-        public void ShowCards(Socket clientSocket, string body)
+        public void ShowCards(Socket clientSocket, string reqBody)
         {
-            var user = new User();
-            List<Card> cards = user.ShowCards();
+            var user = JsonConvert.DeserializeObject<User>(reqBody);
         }
-        public void ShowTrades(Socket clientSocket, string body)
+        public void ShowTrades(Socket clientSocket, string reqBody)
         {
+            var user = JsonConvert.DeserializeObject<User>(reqBody);
         }
         public void NotFound(Socket clientSocket, string body)
         {
             _status = HttpStatusCode.NotFound;
             var response = new Response();
             response.SendJsonResponse(clientSocket, _status, body);
-        }
-        public string GetUsername(string body)
-        {
-            // TODO: Parse
-            return "test1";
-        }
-
-        public string GetPassword(string body)
-        {
-            // TODO: Parse
-            return "password1";
         }
     }
 }

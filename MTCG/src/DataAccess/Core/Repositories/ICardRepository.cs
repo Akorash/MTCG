@@ -13,5 +13,6 @@ namespace MTCG.src.DataAccess.Core.Repositories
     internal interface ICardRepository : IRepository<Card>
     {
         public IEnumerable<Card> GetPackage();
+        public void UpdateUser(Guid id, Guid user_id);
     }
 }

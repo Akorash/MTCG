@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Security.Authentication;
 using System.Text;
@@ -15,36 +16,59 @@ using Newtonsoft.Json;
 
 namespace MTCG.src.Domain.Entities
 {
+    [Serializable]
     public class User
     {
         private readonly int START_COINS = 20;
-        private readonly int CARD_PRICE = 5;
         private readonly string _authString;
-        private List<Card> _stack;
+        private List<Card>? _stack;
         private int _coins;
-        public int? Id { get; private set; }
+
+        public Guid Id { get; private set; }
         public string Username { get; private set; }
         public string Password { get; private set; }
+        public List<Card> Deck { get; private set; }
 
-        public User()
-        {
-            Username = string.Empty;
-            Password = string.Empty;
-            _authString = string.Empty;
-            _stack = new List<Card>();
-            _coins = START_COINS;
-        }
-
-        public User(int? id, string uname, string password)
+        public User(Guid id, string username, string password)
         {
             Id = id;
-            Username = uname;
+            Username = username;
             Password = password;
+
             _authString = string.Empty;
-            _stack = new List<Card>();
+            _stack = default;
+
+            _coins = START_COINS;
+        }
+        public User(string username, string password)
+        {
+            try
+            {
+                using (var unitOfWork = new UnitOfWork()) 
+                {
+                    var user = unitOfWork.Users.GetUserByUsername(username);
+                    if (user != null)
+                    {
+                        throw new ArgumentException("Falied to construct User: Username not found");
+                    }
+                    Id = user.Id;
+                }
+            }
+            catch (Exception e) 
+            {
+                throw e; 
+            }
+
+            Username = username;
+            Password = password;
+
+            _authString = string.Empty;
+            _stack = default;
+
             _coins = START_COINS;
         }
 
+        //------------------------- Authentification --------------------------
         public void Register()
         {
             using (var unitOfWork = new UnitOfWork())
@@ -82,25 +106,55 @@ namespace MTCG.src.Domain.Entities
                 }
             }
         }
+        //---------------------------------------------------------------------
+        //------------------------------ Cards --------------------------------
+        public List<Card> CreatePackage() // Can only be done by admin
+        {
+            // TOOD Check token for admin
+            if (!IsAdmin())
+            {
+                return null;
+            }
+            using (var unitOfWork = new UnitOfWork())
+            {
+                List<Card> cards = (List<Card>)unitOfWork.Cards.GetPackage();
+                return cards;
+            }
+        }
+        public List<Card> BuyPackage()
+        {
+            // TODO UnauthorizedError --> Check Auth Token
+
+            if (!SufficientCoins())
+            {
+                throw new InvalidOperationException("Insufficient Coins");
+            }
+
+            var package = new List<Card>();
+            using (var unitOfWork = new UnitOfWork())
+            {
+                package = unitOfWork.Cards.GetPackage().ToList(); // GetPackage() returns IEnumerable<Card>, hence the .ToList()
+                if (package == null)
+                {
+                    throw new Exception("No card package available for buying");
+                }
+            }
+            return package;
+        }
         public List<Card> ShowCards()
         {
             using (var unitOfWork = new UnitOfWork())
             {
-                List<Card> cards = (List<Card>)unitOfWork.Cards.GetAll();
+                var cards = (List<Card>)unitOfWork.Cards.GetAll();
                 return cards;
             }
         }
-        public void ConfigureDeck()
-        {
-
-        }
-        public List<Card> ShowDeck(int UserId)
+        public List<Card> ShowDeck()
         {
             using (var unitOfWork = new UnitOfWork())
             {
-
                 var deckId = new List<int>();
-                var user = unitOfWork.Users.Get(UserId);
+                var user = unitOfWork.Users.Get(Id);
 
 
 
@@ -109,6 +163,80 @@ namespace MTCG.src.Domain.Entities
 
             }
             return new List<Card>();
+        }
+        public void ConfigureDeck()
+        {
+
+        }
+        public void RequestTradingDeal()
+        {
+            // Must not be in deck
+            // Locked for further usage
+            // Add requirement: spell or monster 
+            // Additionaly Type requirement or Minimum Damage
+        }
+        public List<Trade> ShowTradingDeals()
+        {
+            List<Trade> allTrades;
+            using (var unitOfWork = new UnitOfWork())
+            {
+                allTrades = (List<Trade>)unitOfWork.Trades.GetAll();
+            }
+            return allTrades;
+        }
+        public void Trade(Card card, User other)
+        {
+            using (var unitOfWork = new UnitOfWork())
+            {
+                unitOfWork.Cards.UpdateUser(card.Id, other.Id);
+            }
+        }
+
+        public void AddToDeck(Card card)
+        {
+            Deck.Add(card);
+        }
+        public void RemoveFromDeck(Card card)
+        {
+            int index = Deck.IndexOf(card);
+            Deck.RemoveAt(index);
+        }
+        //---------------------------------------------------------------------
+        //------------------------- Other Actions ----------------------------
+        public void Battle()
+        {
+            // If a player is logged in
+
+            // Signal the server (Game) to put you on the waiting list
+            // And, send the server your deck (?) and Id
+        }
+        public void ViewProfile()
+        {
+
+        }
+        public void ChangeProfile()
+        {
+
+        }
+
+        //---------------------------------------------------------------------
+        //------------------------- Helper Methods ----------------------------
+
+        private bool SufficientCoins() 
+        { 
+            return _coins >= Card.PACK_PRICE; 
+        }
+        private bool CorrectPassword() 
+        { 
+            return true; 
+        }
+        private bool IsAdmin()
+        {
+            return true;
+        }
+        private string GenerateUUID()
+        {
+            return "hello";
         }
         private string GetCardIds(List<Card> list, int length)
         {
@@ -124,33 +252,6 @@ namespace MTCG.src.Domain.Entities
             }
             return cards;
         }
-        public void Battle()
-        {
-            // If a player is logged in
-
-            // Signal the server (Game) to put you on the waiting list
-            // And, send the server your deck (?) and Id
-        }
-        public List<Card> BuyPackage()
-        {
-            // TODO UnauthorizedError --> Check Auth Token
-
-            if (!SufficientCoins()) {
-                throw new InvalidOperationException("Insufficient Coins");
-            }
-
-            var package = new List<Card>();
-            using (var unitOfWork = new UnitOfWork())
-            {
-                package = unitOfWork.Cards.GetPackage().ToList(); // GetPackage() returns IEnumerable<Card>, hence the .ToList()
-                if (package == null) {
-                    throw new Exception("No card package available for buying");
-                }
-            }
-            return package;
-        }
-        private bool SufficientCoins() { return _coins >= CARD_PRICE; }
-        static bool CorrectPassword() { return true; }
 
         static class Verification
         {
@@ -169,10 +270,6 @@ namespace MTCG.src.Domain.Entities
                     return false;
                 }
                 return true;
-            }
-            static void IncorrectPassword(string password)
-            {
-
             }
         }
     }

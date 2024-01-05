@@ -8,8 +8,10 @@ namespace MTCG.src.DataAccess.Persistance.DTOs
 {
     public class CardDTO
     {
-        public int Id { get; set; }
+        public strng Id { get; set; }
         public string Type { get; set; }
+        public string? Monster { get; set; }
+        public string Element { get; set; }
         public int Damage { get; set; }
 
     }

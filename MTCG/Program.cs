@@ -13,7 +13,7 @@ namespace MTCG
             cntxt.CreateSchema();
 
             // Web Api (Server)
-            var MTCG = new Server(8080, 10);
+            var MTCG = new Server(10001, 10);
             await MTCG.StartAsync();
 
             // Exit
