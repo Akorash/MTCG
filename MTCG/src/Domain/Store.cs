@@ -16,11 +16,5 @@ namespace MTCG.src.Domain
         {
     
         }
-        private Card RandomCard()
-        {
-            int _randomId = 1;
-            var _randomCard = new Card(_randomId, "Normal", "Monster", "Kraken", 30);
-            return _randomCard;
-        }
     }
 }

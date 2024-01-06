@@ -10,7 +10,9 @@ namespace MTCG.src.DataAccess.Core.Repositories
 {
     public interface IUserRepository : IRepository<User>
     {
-        public User GetUserByUsername(string username);
-        public int GetIdByUsername(string username);
+        public Guid GetIdByUsername(string username);
+        public User GetByUsername(string username);
+        public User GetByToken(string token);
+        public void UpdateUser(Guid card_id, Guid user_id);
     }
 }

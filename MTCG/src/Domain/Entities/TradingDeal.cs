@@ -8,23 +8,24 @@ using static System.Net.Mime.MediaTypeNames;
 
 namespace MTCG.src.Domain.Entities
 {
-    public class Trade
+    public class TradingDeal
     {
         public Guid Id { get; set; }
+        public Guid CardToTrade { get; set; }   
         public Guid User { get; set; }
-        public string TypeRequirement { get; set; }
+        public string Type { get; set; }
         public int MinimumDamage { get; set; }
 
-        public Trade(Guid id, Guid user, string typeRequirement, int minimumDamage)
+        public TradingDeal(Guid id, Guid card, Guid user, string type, int minimumDamage)
         {
             Id = id;
+            CardToTrade = card;
             User = user;
-
-            if (!typeRequirement.Equals(CardType.Monster.ToString()) || !typeRequirement.Equals(CardType.Spell.ToString()))
+            if (!type.Equals(CardType.Monster.ToString()) || !type.Equals(CardType.Spell.ToString()))
             {
                 throw new ArgumentException("Could not construct Trade: Invalid Type");
             }
-            TypeRequirement = typeRequirement;
+            Type = type;
             if (minimumDamage <= 0 || minimumDamage > Card.MAX_DAMAGE)
             {
                 throw new ArgumentException("Could not construct Card: Invalid Damage");

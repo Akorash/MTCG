@@ -91,7 +91,7 @@ namespace MTCG.src.HTTP
             Console.WriteLine($"Debug: {body}");
             switch (url)
             {
-                case "/users/{username}":
+                case "/users/{username}": //
                     _rh.RetrieveUserData(clientSocket, body);
                     break;
                 case "/cards":
@@ -107,7 +107,7 @@ namespace MTCG.src.HTTP
                     _rh.RetrieveScoreBoard(clientSocket, body);
                     break;
                 case "/tradings":
-                    _rh.ShowDeck(clientSocket, body);
+                    _rh.ShowTradingDeals(clientSocket, body);
                     break;
                 default:
                     _rh.NotFound(clientSocket, body);
@@ -119,14 +119,14 @@ namespace MTCG.src.HTTP
             Console.WriteLine($"Debug: {body}");
             switch (url)
             {
-                case "/users":
+                case "/users": 
                     _rh.Register(clientSocket, body);
                     break;
                 case "/sessions":
-                    _rh.LogIn(clientSocket, body);
+                    _rh.LogIn(clientSocket, body); 
                     break;
                 case "/packages":
-                    
+                    _rh.NewPackage(clientSocket, body); 
                     break;
                 case "/transactions/packages":
                     _rh.AquirePackage(clientSocket, body);
@@ -135,10 +135,10 @@ namespace MTCG.src.HTTP
                     _rh.Battle(clientSocket, body);
                     break;
                 case "/tradings":
-
+                    _rh.NewTradingDeal(clientSocket, body);
                     break;
                 case "/tradings/{tradingdealid}":
-
+                    _rh.Trade(clientSocket, body);  
                     break;
                 default:
                     _rh.NotFound(clientSocket, body);
@@ -150,10 +150,10 @@ namespace MTCG.src.HTTP
             switch (url)
             {
                 case "/users/{username}":
-                    
+                    _rh.UpdateUserData(clientSocket, body);
                     break;
                 case "/deck":
-
+                    _rh.ConfigureDeck(clientSocket, body);
                     break;
                 default:
                     _rh.NotFound(clientSocket, body);
@@ -164,11 +164,8 @@ namespace MTCG.src.HTTP
         {
             switch (url)
             {
-                case "/users/{username}":
-
-                    break;
-                case "/deck":
-
+                case "/tradings/{tradingdealid}":
+                    _rh.DeleteTradingDeal(clientSocket, body);
                     break;
                 default:
                     _rh.NotFound(clientSocket, body);
@@ -186,10 +183,6 @@ namespace MTCG.src.HTTP
         private async Task<Socket> AcceptAsync(Socket serverSocket)
         {
             return await Task.Factory.FromAsync(serverSocket.BeginAccept, serverSocket.EndAccept, null);
-        }
-        private void Battle()
-        {
-
         }
     }
 }

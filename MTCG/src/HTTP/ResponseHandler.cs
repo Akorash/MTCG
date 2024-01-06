@@ -1,24 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using MTCG.src.DataAccess.Persistance.DTOs;
+using MTCG.src.DataAccess.Persistance.Mappers;
+using MTCG.src.Domain.Entities;
+using Newtonsoft.Json;
+using System.Data;
 using System.Net;
 using System.Net.Sockets;
-using System.Data;
-using System.ComponentModel;
 using System.Security.Authentication;
-using System.Reflection;
-using Newtonsoft.Json;
-using System.Runtime.InteropServices.ObjectiveC;
-
-using MTCG.src.DataAccess.Persistance.Mappers;
-using MTCG.src.DataAccess.Persistance.Repositories;
-using MTCG.src.DataAccess.Persistance.DTOs;
-using MTCG.src.DataAccess.Persistance;
-using MTCG.src.Domain.Entities;
-using MTCG.src.Domain;
-using MTCG.src.HTTP;
 
 namespace MTCG.src.HTTP
 {
@@ -33,14 +20,18 @@ namespace MTCG.src.HTTP
     public class ResponseHandler
     {
         private HttpStatusCode _status;
+        private Mapper _mapper;
         private BattleQueue _battleQueue;
         private readonly object _battleLock;
-        public ResponseHandler() { }
+
         public ResponseHandler(object battleLock, BattleQueue battleQueue) 
         {
+            _status = default;
+            _mapper = new();
             _battleLock = battleLock;
             _battleQueue = battleQueue;
         }
+
         //---------------------------------------------------------------------
         // /////////////////////////////// POST ///////////////////////////////
         //---------------------------------------------------------------------
@@ -48,43 +39,50 @@ namespace MTCG.src.HTTP
         //------------------------- Authentification --------------------------
         public void Register(Socket clientSocket, string reqBody)
         {
-            Console.WriteLine($"Debug: {reqBody}");
-            var user = JsonConvert.DeserializeObject<User>(reqBody);
+            object body = reqBody; // If the registration is successful, return the request body (user)
 
-            // var user = new User(null, GetUsername(reqBody), GetPassword(reqBody));
             try
             {
+                var bearerToken = JsonConvert.DeserializeObject<BearerTokenDTO>(reqBody);
+                var user = new User(bearerToken.BearerToken);
+
                 user.Register();
                 _status = HttpStatusCode.Created;
             }
             catch (DuplicateNameException e) // Username is taken
             {
                 Console.WriteLine($"Registration failed: Username {e.Message} is taken\n");
+                body = e.Message;
                 _status = HttpStatusCode.Conflict;
             }
             catch (Exception e)
             {
                 Console.WriteLine($"Registration failed: {e.Message}\n");
+                body = e.Message;
                 _status = HttpStatusCode.NotFound;
             }
+
             var response = new Response();
-            response.SendJsonResponse(clientSocket, _status, user);
-        }
+            response.SendJsonResponse(clientSocket, _status, body);
+        } 
         public void LogIn(Socket clientSocket, string reqBody)
         {
-            object body = null; // Response body
-
-            var user = JsonConvert.DeserializeObject<User>(reqBody);
+            object body = default; // Response body
+            
             try
             {
+                var userDTO = JsonConvert.DeserializeObject<UserDTO>(reqBody);
+                var user = _mapper.Users.Map(userDTO);
+
                 user.LogIn();
                 _status = HttpStatusCode.OK;
-                body = user;
+                body = user; // description: User login successful
+                // body content: string authentification token kienkoec-mtcgToken
             }
             catch (ArgumentException e)
             {
                 Console.WriteLine($"Login failed: {e.Message}\n");
-                _status = HttpStatusCode.Unauthorized;
+                _status = HttpStatusCode.Unauthorized; // description: Invalid username/password provided
             }
             catch (InvalidOperationException e)
             {
@@ -103,15 +101,37 @@ namespace MTCG.src.HTTP
             }
             var response = new Response();
             response.SendJsonResponse(clientSocket, _status, body);
-        }
+        } 
         //---------------------------------------------------------------------
         public void NewPackage(Socket clientSocket, string reqBody)
         {
+            object body = default; // Response body
+
             try 
             {
-                var user = JsonConvert.DeserializeObject<User>(reqBody);
-                user.CreatePackage(); // TODO replace with CreatePackage()
-                _status = HttpStatusCode.OK;
+                var bearerToken = JsonConvert.DeserializeObject<BearerTokenDTO>(reqBody);
+                var user = new User(bearerToken.BearerToken);
+
+                user.CreatePackage();
+                _status = HttpStatusCode.Created;
+            }
+            catch (UnauthorizedAccessException e)
+            {
+                Console.WriteLine(e.Message);
+                _status = HttpStatusCode.Unauthorized;
+            }
+            catch (HttpRequestException e)
+            {
+                Console.WriteLine(e.Message);
+                if (e.Message.Contains("Not admin"))
+                {
+                    _status = HttpStatusCode.Forbidden; 
+                }
+                else if (e.Message.Contains("At least one card in the package already exists"))
+                {
+                    _status = HttpStatusCode.Conflict; 
+                }
+                _status = HttpStatusCode.Forbidden;          
             }
             catch (Exception e)
             {
@@ -121,38 +141,45 @@ namespace MTCG.src.HTTP
         }
         public void AquirePackage(Socket clientSocket, string reqBody)
         {
-            object body = null; // Response body
+            object body = default; // Response body
             try
             {
-                var user = JsonConvert.DeserializeObject<User>(reqBody);
+                var bearerToken = JsonConvert.DeserializeObject<BearerTokenDTO>(reqBody);
+                var user = new User(bearerToken.BearerToken);
+
                 body = user.BuyPackage();
-                Console.WriteLine(body);
+                _status = HttpStatusCode.OK;
             }
             catch (UnauthorizedAccessException e)
             {
                 Console.WriteLine($"Failed to aquire package due to unauthorized access: {e.Message}");
-                _status = HttpStatusCode.Unauthorized;
+                _status = HttpStatusCode.Unauthorized; //401
             }
             catch (InvalidOperationException e)
             {
                 Console.WriteLine($"Failed to aquire package due to insufficient coins: {e.Message}");
-                _status = HttpStatusCode.Forbidden;
+                _status = HttpStatusCode.Forbidden;//403 Not enough money
             }
             catch (Exception e)
             {
                 Console.WriteLine($"Failed to aquire package: {e.Message}");
-                _status = HttpStatusCode.NotFound;
+                _status = HttpStatusCode.NotFound; // No card package availabe for buying
             }
+
             var response = new Response();
             response.SendJsonResponse(clientSocket, _status, body);
         }
         public void Battle(Socket clientSocket, string reqBody)
         {
+            object body = default; // Response body
+
             try 
             {
-                var user = JsonConvert.DeserializeObject<User>(reqBody);
+                var bearerToken = JsonConvert.DeserializeObject<BearerTokenDTO>(reqBody);
+                var user = new User(bearerToken.BearerToken);
+
                 user.Battle();
-                _status = HttpStatusCode.OK;
+                _status = HttpStatusCode.OK; // return battle log
             }
             catch (UnauthorizedAccessException e) 
             {
@@ -160,55 +187,255 @@ namespace MTCG.src.HTTP
                _status = HttpStatusCode.Unauthorized;
             }
 
-            /*
-      summary: Enters the lobby to start a battle.
-            
-      description: If there is already another user in the lobby, the battle will start immediately. 
-            Otherwise the request will wait for another user to enter.
-      responses:
-        '200':
-          description: The battle has been carried out successfully.
-          content:
-            text/plain:
-              schema:
-                type: string
-                description: The battle log.
-             */
+            var response = new Response();
+            response.SendJsonResponse(clientSocket, _status, body);
         }
-        public void Tradings(Socket clientSocket, string reqBody)
+        public void NewTradingDeal(Socket clientSocket, string reqBody)
         {
+            object body = default; // Response body
+
+            try
+            {
+                var bearerToken = JsonConvert.DeserializeObject<BearerTokenDTO>(reqBody);
+                var user = new User(bearerToken.BearerToken);
+
+                _status = HttpStatusCode.Created;
+            }
+            catch (InvalidDataException e) // No trading deals available
+            {
+                Console.WriteLine(e.Message);
+                _status = HttpStatusCode.NoContent;
+            }
+            catch (ArgumentException e) // Deal contains a card that is not owned by the user or is blocked in deck
+            {
+                Console.WriteLine(e.Message);
+                _status = HttpStatusCode.Forbidden;
+            }
+            catch (InvalidOperationException e) // A deal with this id already exists
+            {
+                Console.WriteLine(e.Message);
+                _status = HttpStatusCode.Conflict;
+            }
+            catch (UnauthorizedAccessException e) // Unauthorized error
+            {
+                Console.WriteLine(e.Message);
+                _status = HttpStatusCode.Unauthorized;
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+                _status = HttpStatusCode.NotFound;
+            }
+
+            var response = new Response();
+            response.SendJsonResponse(clientSocket, _status, body);
         }
-        public void TradingsWithId(Socket clientSocket, string reqBody)
+        public void Trade(Socket clientSocket, string reqBody)
         {
+            object body = default; // Response body
+
+            try
+            {
+                var bearerToken = JsonConvert.DeserializeObject<BearerTokenDTO>(reqBody);
+                var user = new User(bearerToken.BearerToken);
+
+                _status = HttpStatusCode.Created;
+            }
+            catch (InvalidDataException e) // No trading deals available
+            {
+                Console.WriteLine(e.Message);
+                _status = HttpStatusCode.NoContent;
+            }
+            catch (ArgumentException e) // Deal contains a card that is not owned by the user or is blocked in deck
+            {
+                Console.WriteLine(e.Message);
+                _status = HttpStatusCode.Forbidden;
+            }
+            catch (InvalidOperationException e) // A deal with this id already exists
+            {
+                Console.WriteLine(e.Message);
+                _status = HttpStatusCode.Conflict;
+            }
+            catch (UnauthorizedAccessException e) // Unauthorized error
+            {
+                Console.WriteLine(e.Message);
+                _status = HttpStatusCode.Unauthorized;
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+                _status = HttpStatusCode.NotFound;
+            }
+
+            var response = new Response();
+            response.SendJsonResponse(clientSocket, _status, body);
         }
         //---------------------------------------------------------------------
         // /////////////////////////////// GET ////////////////////////////////
         //---------------------------------------------------------------------
-        public void RetrieveUserData(Socket clientSocket, string reqBody)
+        public void RetrieveUserData(Socket clientSocket, string reqBody) // TODO
         {
-            var user = JsonConvert.DeserializeObject<User>(reqBody);
-        }
-        public void ShowDeck(Socket clientSocket, string reqBody)
-        {
-            var user = JsonConvert.DeserializeObject<User>(reqBody);
+            object body = default; // Response body
 
-        }
-        public void RetrieveStats(Socket clientSocket, string reqBody)
-        {
-            var user = JsonConvert.DeserializeObject<User>(reqBody);
-        }
-        public void RetrieveScoreBoard(Socket clientSocket, string reqBody)
-        {
-            var user = JsonConvert.DeserializeObject<User>(reqBody);
+            try
+            {
+                var bearerToken = JsonConvert.DeserializeObject<BearerTokenDTO>(reqBody);
+                var user = new User(bearerToken.BearerToken);
+
+                // Admin auth
+
+                user.Battle();
+                _status = HttpStatusCode.OK; // 200
+            }
+            // 401 Unauthorized
+            catch (UnauthorizedAccessException e)
+            {
+                Console.WriteLine($"Battle attempt falied: {e.Message}");
+                _status = HttpStatusCode.Unauthorized;
+            }
+            // 404 Not found
+
+            var response = new Response();
+            response.SendJsonResponse(clientSocket, _status, body);
         }
         public void ShowCards(Socket clientSocket, string reqBody)
         {
-            var user = JsonConvert.DeserializeObject<User>(reqBody);
+            object body = default; // Response body
+
+            try
+            {
+                var bearerToken = JsonConvert.DeserializeObject<BearerTokenDTO>(reqBody);
+                var user = new User(bearerToken.BearerToken);
+
+                body = user.ShowCards();
+                _status = HttpStatusCode.OK;
+            }
+            catch (UnauthorizedAccessException e) // 204 user has no cards
+            {
+                Console.WriteLine($"Battle attempt falied: {e.Message}");
+                _status = HttpStatusCode.Unauthorized;
+            }
+            //401
+
+            var response = new Response();
+            response.SendJsonResponse(clientSocket, _status, body);
         }
-        public void ShowTrades(Socket clientSocket, string reqBody)
+        public void ShowDeck(Socket clientSocket, string reqBody)
         {
-            var user = JsonConvert.DeserializeObject<User>(reqBody);
+            object body = default; // Response body
+
+            try
+            {
+                var bearerToken = JsonConvert.DeserializeObject<BearerTokenDTO>(reqBody);
+                var user = new User(bearerToken.BearerToken);
+
+                body = user.ShowDeck();
+                _status = HttpStatusCode.OK;
+            }
+            // 204
+            catch (UnauthorizedAccessException e)
+            {
+                Console.WriteLine($"Battle attempt falied: {e.Message}");
+                _status = HttpStatusCode.Unauthorized;
+            }
+
+            var response = new Response();
+            response.SendJsonResponse(clientSocket, _status, body);
         }
+        public void RetrieveStats(Socket clientSocket, string reqBody) // TODO
+        {
+            object body = default; // Response body
+
+            try
+            {
+                var bearerToken = JsonConvert.DeserializeObject<BearerTokenDTO>(reqBody);
+                var user = new User(bearerToken.BearerToken);
+
+                user.Battle();
+                _status = HttpStatusCode.OK; // body = userstats
+            }
+            catch (UnauthorizedAccessException e)
+            {
+                Console.WriteLine($"Battle attempt falied: {e.Message}");
+                _status = HttpStatusCode.Unauthorized;
+            }
+
+            var response = new Response();
+            response.SendJsonResponse(clientSocket, _status, body);
+
+        }
+        public void RetrieveScoreBoard(Socket clientSocket, string reqBody) // TODO // just bearer token... for most of these
+        {
+            object body = default; // Response body
+            // Retrieves the user scoreboard ordered by the user's ELO.
+            try
+            {
+                var bearerToken = JsonConvert.DeserializeObject<BearerTokenDTO>(reqBody);
+                var user = new User(bearerToken.BearerToken);
+
+                user.Battle();
+                _status = HttpStatusCode.OK;
+            }
+            catch (UnauthorizedAccessException e)
+            {
+                Console.WriteLine($"Battle attempt falied: {e.Message}");
+                _status = HttpStatusCode.Unauthorized;
+            }
+
+            var response = new Response();
+            response.SendJsonResponse(clientSocket, _status, body);
+        }
+        public void ShowTradingDeals(Socket clientSocket, string reqBody)
+        {
+            object body = default; // Response body
+            try
+            {
+                var bearerToken = JsonConvert.DeserializeObject<BearerTokenDTO>(reqBody);
+                var user = new User(bearerToken.BearerToken);
+
+            }
+            catch (Exception e)
+            {
+                // 204 No trading deals available
+                Console.WriteLine(e.Message);
+            }
+            // 401 unauth error
+
+            var response = new Response();
+            response.SendJsonResponse(clientSocket, _status, body);
+        }
+        //---------------------------------------------------------------------
+        // /////////////////////////////// PUT ////////////////////////////////
+        //---------------------------------------------------------------------
+
+        public void UpdateUserData(Socket clientSocket, string body)
+        {
+            // Uptates and Retrieves user data
+            // 200 description: User sucessfully updated.
+            // 401
+            // 404 description: User not found.
+        }
+        public void ConfigureDeck(Socket clientSocket, string body)
+        {
+            // gets four card uuids
+            // failed request doesnt change the deck
+            // 200
+            // 400 not the requiremed amount of cards
+            // 401 unauthorized error
+            // 403 at least oneof the cards doesnt belogn to the user or is not available
+        }
+        //---------------------------------------------------------------------
+        // ///////////////////////////// DELETE ///////////////////////////////
+        //---------------------------------------------------------------------
+        public void DeleteTradingDeal(Socket clientSocket, string body)
+        {
+            //200
+            // 401 Unauthorized error
+            // 403 card not owned by the user
+            // 404 // not found
+            // deal with this id already exsts
+        }
+        //---------------------------------------------------------------------
         public void NotFound(Socket clientSocket, string body)
         {
             _status = HttpStatusCode.NotFound;

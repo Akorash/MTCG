@@ -16,7 +16,7 @@ namespace MTCG.src.Domain
         private readonly int EFECTIV_MULT = 2;
         private readonly int INEFECTIV_DIV = 1 / 2;
         public bool RoundFinished { get; private set; }
-        public int Winner { get; private set; }
+        public Guid? Winner { get; private set; }
         public bool Draw { get; private set; }
 
         // Initial Damage
@@ -73,7 +73,7 @@ namespace MTCG.src.Domain
         }
 
         // Used for both pure spell fights and mixed fights --> Takes element into account
-        private int CompareDamage(Card card1, Card card2)
+        private Guid? CompareDamage(Card card1, Card card2)
         {
             // Check and calcualte effectiveness --> Changes damage
             if (WaterVsFire(card1, card2) || FireVsNormal(card1, card2) || NormalVsWater(card1, card2))
@@ -89,11 +89,11 @@ namespace MTCG.src.Domain
             if (DamagePlayer1 == DamagePlayer2)
             {
                 Draw = true;
-                return 0;
+                return null;
             }
             return (DamagePlayer1 > DamagePlayer2) ? card1.Id : card2.Id;
         }
-        private int CompareMonsterDamage(Card card1, Card card2)
+        private Guid? CompareMonsterDamage(Card card1, Card card2)
         {
             // Special cases (See explination underneath)
             if (GoblinVsDragon(card1, card2) || WizzardVsOrk(card1, card2) || FireElfVsDragon(card1, card2))
@@ -109,11 +109,11 @@ namespace MTCG.src.Domain
             if (DamagePlayer1 == DamagePlayer2)
             {
                 Draw = true;
-                return 0;
+                return null;
             }
             return (DamagePlayer1 > DamagePlayer2) ? card1.Id : card2.Id;
         }
-        private int CompareMixedDamage(Card card1, Card card2)
+        private Guid? CompareMixedDamage(Card card1, Card card2)
         {
             // Special cases (See explination underneath)
             if (KnightVsWaterSpell(card1, card2) || KrakenVsSpell(card1, card2))
@@ -132,7 +132,6 @@ namespace MTCG.src.Domain
                 $"vs {Player2}: {card2.Element.ToString()}{card2.Type.ToString()} ({InDamagePlayer1} Damage)" +
                          $"=> {InDamagePlayer1} VS {InDamagePlayer2} -> {DamagePlayer1} vs {DamagePlayer2} => ";
             result += (Draw ? "Draw" : (Winner == card1.Id ? $"{card1.Element.ToString()}{card1.Type.ToString()} wins" : $"{card2.Element.ToString()}{card2.Type.ToString()} wins"));
-
             return result;
         }
 

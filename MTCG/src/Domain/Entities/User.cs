@@ -1,71 +1,69 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using MTCG.src.DataAccess.Persistance;
+using Newtonsoft.Json.Linq;
 using System.Data;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Reflection;
-using System.Runtime.CompilerServices;
+using System.Drawing;
 using System.Security.Authentication;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.Extensions.Configuration;
-using MTCG.src.DataAccess.Persistance;
-using MTCG.src.DataAccess.Persistance.Mappers;
-using MTCG.src.DataAccess.Persistance.Repositories;
-using Newtonsoft.Json;
+using System.Xml.Linq;
 
 namespace MTCG.src.Domain.Entities
 {
     [Serializable]
     public class User
     {
-        private readonly int START_COINS = 20;
-        private readonly string _authString;
-        private List<Card>? _stack;
+        public static int START_COINS = 20;
+
         private int _coins;
 
         public Guid Id { get; private set; }
+        public string BearerToken { get; private set; } 
         public string Username { get; private set; }
         public string Password { get; private set; }
+        public string? Name { get; private set; }
+        public string? Bio { get; private set; }
+        public string? Image { get; private set; }
+        public int Elo { get; private set; }
+        public int Wins { get; private set; }
+        public int Looses { get; private set; }
+        public int Coins { get; private set; }
+        
         public List<Card> Deck { get; private set; }
 
-        public User(Guid id, string username, string password)
-        {
-            Id = id;
-            Username = username;
-            Password = password;
-
-            _authString = string.Empty;
-            _stack = default;
-
-            _coins = START_COINS;
-        }
-        public User(string username, string password)
+        public User(string bearerToken)
         {
             try
             {
-                using (var unitOfWork = new UnitOfWork()) 
+                using (var unitOfWork = new UnitOfWork())
                 {
-                    var user = unitOfWork.Users.GetUserByUsername(username);
-                    if (user != null)
+                    var user = unitOfWork.Users.GetUserByToken(bearerToken);
+                    if (user == null)
                     {
-                        throw new ArgumentException("Falied to construct User: Username not found");
+                        throw new ArgumentException("Falied to construct user: Token not found");
                     }
                     Id = user.Id;
+                    BearerToken = user.BearerToken;
+                    Username = user.Username;
+                    Password = user.Password;
+                    Name = user.Name;
+                    Bio = user.Bio;
+                    Image = user.Image;
+                    Coins = user.Coins;
                 }
             }
-            catch (Exception e) 
+            catch (Exception e)
             {
-                throw e; 
+                throw e;
             }
-
+        }
+        public User(Guid id, string token, string username, string password, string name, string bio, string image, int coins)
+        {
+            Id = id;
+            BearerToken = token;
             Username = username;
             Password = password;
-
-            _authString = string.Empty;
-            _stack = default;
-
-            _coins = START_COINS;
+            Name = name;
+            Bio = password;
+            Image = password;
+            Coins = coins;
         }
 
         //------------------------- Authentification --------------------------
@@ -78,7 +76,7 @@ namespace MTCG.src.Domain.Entities
                     throw new ArgumentException();
                 }
                 // Check whether a user with the same username already exists
-                if (unitOfWork.Users.GetUserByUsername(Username) != null)
+                if (unitOfWork.Users.GetIdByUsername(Username) != Guid.Empty)
                 {
                     throw new DuplicateNameException(Username);
                 }
@@ -175,12 +173,12 @@ namespace MTCG.src.Domain.Entities
             // Add requirement: spell or monster 
             // Additionaly Type requirement or Minimum Damage
         }
-        public List<Trade> ShowTradingDeals()
+        public List<Tradingdeal> ShowTradingDeals()
         {
-            List<Trade> allTrades;
+            List<Tradingdeal> allTrades;
             using (var unitOfWork = new UnitOfWork())
             {
-                allTrades = (List<Trade>)unitOfWork.Trades.GetAll();
+                allTrades = (List<Tradingdeal>)unitOfWork.Trades.GetAll();
             }
             return allTrades;
         }
@@ -191,7 +189,6 @@ namespace MTCG.src.Domain.Entities
                 unitOfWork.Cards.UpdateUser(card.Id, other.Id);
             }
         }
-
         public void AddToDeck(Card card)
         {
             Deck.Add(card);

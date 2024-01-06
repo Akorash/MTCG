@@ -1,4 +1,5 @@
-﻿using MTCG.src.DataAccess.Persistance.DTOs;
+﻿using MTCG.src.DataAccess.Core;
+using MTCG.src.DataAccess.Persistance.DTOs;
 using MTCG.src.Domain.Entities;
 using System;
 using System.Collections.Generic;
@@ -8,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace MTCG.src.DataAccess.Persistance.Mappers
 {
-    internal class CardMapper
+    public class CardMapper : IMapper<Card, CardDTO>
     {
         public CardMapper() { }
         public Card Map(CardDTO cardDTO)
@@ -21,6 +22,7 @@ namespace MTCG.src.DataAccess.Persistance.Mappers
             return new CardDTO()
             {
                 Id = card.Id,
+                User = card.User, 
                 Type = card.Type,
                 Damage = card.Damage,
                 Element = card.Element,

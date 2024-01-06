@@ -11,5 +11,7 @@ namespace MTCG.src.DataAccess.Core
     internal interface IUnitOfWork : IDisposable
     {
         public IUserRepository Users { get; }
+        public ICardRepository Cards { get; }
+        public ITradingDealRepository TradingDeals { get; }
     }
 }

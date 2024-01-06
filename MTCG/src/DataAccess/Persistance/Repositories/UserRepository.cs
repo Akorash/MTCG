@@ -20,46 +20,46 @@ namespace MTCG.src.DataAccess.Persistance.Repositories
             Context = context;
             Mapper = mapper;
         }
+
         public User Get(Guid id)
         {
-            UserDTO model = Context.GetUserById(id);
-            if (model == null)
-            {
-                return null;
-            }
-            return Mapper.Map(model);
-        }
-        public User GetUserByUsername(string username)
-        {
-            UserDTO model = Context.GetUserByUsername(username);
-            Console.WriteLine("Debug: Successfully got a DTO back");
-            if (model == null) 
-            {
-                return null;
-            }
-            return Mapper.Map(model);
+            UserDTO dto = Context.GetUserById(id);
+            return Mapper.Map(dto);
         }
         public IEnumerable<User> GetAll()
         {
             IEnumerable<UserDTO> dtos = Context.GetAllUsers();
-            if (dtos == null)
-            {
-                return null;
-            }
             return dtos.Select(dto => Mapper.Map(dto));
         }
-
         public void Add(User entity)
         {
-            UserDTO dto = Mapper.Map(entity);
+            var dto = Mapper.Map(entity);
             Context.AddUser(dto);
         }
         public void Delete(Guid id)
         {
-            if (id != null)
+            if (id != Guid.Empty)
             {
                 Context.DeleteUser(id);
             }
+        }
+        public User GetByUsername(string username)
+        {
+            var user = Context.GetUserByUsername(username);
+            return Mapper.Map(user);
+        }
+        public User GetByToken(string token)
+        {
+            var dto = Context.GetUserByToken(token);
+            return Mapper.Map(dto);
+        }
+        public Guid GetIdByUsername(string username)
+        {
+            return Context.GetIdByUsername(username);
+        }
+        public void UpdateUser(Guid card_id, Guid user_id) 
+        {
+            Context.UpdateUserInCard(card_id, user_id);
         }
     }
 }

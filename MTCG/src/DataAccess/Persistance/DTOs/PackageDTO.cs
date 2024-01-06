@@ -8,7 +8,7 @@ namespace MTCG.src.DataAccess.Persistance.DTOs
 {
     public class PackageDTO
     {
-        public string Id { get; set; }
+        public Guid Id { get; set; }
         public string Card1Id { get; set; }
         public string Card2Id { get; set; }
         public string Card3Id { get; set; }

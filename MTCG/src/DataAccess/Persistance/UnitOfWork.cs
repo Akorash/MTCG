@@ -15,10 +15,10 @@ namespace MTCG.src.DataAccess.Persistance
 {
     internal class UnitOfWork : IUnitOfWork
     {
-        private readonly PostgreSql _manager;
-        private readonly UserMapper _userMapper;
-        private readonly CardMapper _cardMapper;
-        private readonly TradeMapper _tradeMapper;
+        private PostgreSql _manager;
+        private UserMapper _userMapper;
+        private CardMapper _cardMapper;
+        private TradeMapper _tradeMapper;
 
         public UnitOfWork()
         {

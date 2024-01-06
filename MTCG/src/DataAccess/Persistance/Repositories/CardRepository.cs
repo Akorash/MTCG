@@ -24,8 +24,8 @@ namespace MTCG.src.DataAccess.Persistance.Repositories
 
         public Card Get(Guid id)
         {
-            CardDTO model = DbManager.GetCardById(id);
-            return Mapper.Map(model);
+            var dto = DbManager.GetCardById(id);
+            return Mapper.Map(dto);
         }
         public IEnumerable<Card> GetAll()
         {
@@ -35,7 +35,6 @@ namespace MTCG.src.DataAccess.Persistance.Repositories
         public IEnumerable<Card> GetPackage()
         {
             IEnumerable<CardDTO> dtos = DbManager.GetPackage();
-            Console.WriteLine();
             return dtos.Select(dto => Mapper.Map(dto));
         }
         public void Add(Card entity)
@@ -49,7 +48,8 @@ namespace MTCG.src.DataAccess.Persistance.Repositories
         }
         public void Delete(Guid id)
         {
-            if (id != null) {
+            if (id != Guid.Empty) 
+            {
                 DbManager.DeleteCard(id);
             }
         }

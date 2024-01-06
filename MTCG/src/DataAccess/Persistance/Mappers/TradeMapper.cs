@@ -9,21 +9,21 @@ using System.Threading.Tasks;
 
 namespace MTCG.src.DataAccess.Persistance.Mappers
 {
-    public class TradeMapper : IMapper<Trade, TradeDTO>
+    public class TradeMapper : IMapper<TradingDeal, TradingDealDTO>
     {
         public TradeMapper() { }
-        public Trade Map(TradeDTO tradeDTO)
+        public TradingDeal Map(TradingDealDTO tradeDTO)
         {
-            return new Trade(tradeDTO.Id, tradeDTO.User, tradeDTO.TypeRequirement, tradeDTO.MinimumDamage);
+            return new TradingDeal(tradeDTO.Id, tradeDTO.User, tradeDTO.Type, tradeDTO.MinimumDamage);
         }
 
-        public TradeDTO Map(Trade trade)
+        public TradingDealDTO Map(TradingDeal trade)
         {
-            return new TradeDTO()
+            return new TradingDealDTO()
             {
                 Id = trade.Id,
                 User = trade.User,
-                TypeRequirement = trade.TypeRequirement,
+                Type = trade.Type,
                 MinimumDamage = trade.MinimumDamage
             };
         }

@@ -7,11 +7,12 @@ using System.Threading.Tasks;
 
 namespace MTCG.src.DataAccess.Persistance.DTOs
 {
-    public class TradeDTO
+    public class TradingDealDTO
     {
         public Guid Id { get; set; }
         public Guid User { get; set; }
-        public string TypeRequirement { get; set; }
+        public Guid Card { get; set; }
+        public string Type { get; set; }
         public int MinimumDamage { get; set; }
     }
 }

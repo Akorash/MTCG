@@ -8,7 +8,7 @@ using MTCG.src.Domain.Entities;
 
 namespace MTCG.src.DataAccess.Core.Repositories
 {
-    public interface ITradeRepository : IRepository<Trade>
+    public interface ITradingDealRepository : IRepository<TradingDeal>
     {
 
     }

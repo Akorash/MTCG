@@ -11,40 +11,33 @@ using MTCG.src.DataAccess.Persistance.Mappers;
 
 namespace MTCG.src.DataAccess.Persistance.Repositories
 {
-    internal class TradeRepository : ITradeRepository
+    internal class TradingDealRepository : ITradingDealRepository
     {
         protected readonly PostgreSql Context;
         protected readonly TradeMapper Mapper;
-        public TradeRepository(PostgreSql context, TradeMapper mapper)
+        public TradingDealRepository(PostgreSql context, TradeMapper mapper)
         {
             Context = context;
             Mapper = mapper;
         }
-        public Trade Get(Guid id)
+
+        public TradingDeal Get(Guid id)
         {
-            TradeDTO model = Context.GetTradeById(id);
-            if (model == null)
-            {
-                return null;
-            }
-            return Mapper.Map(model);
+            var dto = Context.GetTradingDealById(id);
+            return Mapper.Map(dto);
         }
-        public IEnumerable<Trade> GetAll()
+        public IEnumerable<TradingDeal> GetAll()
         {
-            IEnumerable<TradeDTO> dtos = Context.GetAllTrades();
-            if (dtos == null)
-            {
-                return null;
-            }
+            IEnumerable<TradingDealDTO> dtos = Context.GetAllTrades();
             return dtos.Select(dto => Mapper.Map(dto));
         }
-        public void Add(Trade model)
+        public void Add(TradingDeal dto)
         {
-
+            Context.AddTradingDeal(Mapper.Map(dto));
         }
         public void Delete(Guid id)
         {
-
+            Context.DeleteTradingDeal(id);
         }
     }
 }
