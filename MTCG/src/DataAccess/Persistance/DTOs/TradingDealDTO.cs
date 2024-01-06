@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 
 namespace MTCG.src.DataAccess.Persistance.DTOs
 {
+    [Serializable]
     public class TradingDealDTO
     {
         public Guid Id { get; set; }

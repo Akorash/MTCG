@@ -179,8 +179,8 @@ namespace MTCG.src.Domain
             {
                 return true;
             }
-            if ((card1.Element == Card.ElementType.Normal.ToString() && card2.Element == Card.ElementType.Normal.ToString()) ||
-               (card2.Element == Card.ElementType.Normal.ToString() && card1.Element == Card.ElementType.Normal.ToString()))
+            if ((card1.Element == Card.ElementType.Regular.ToString() && card2.Element == Card.ElementType.Regular.ToString()) ||
+               (card2.Element == Card.ElementType.Regular.ToString() && card1.Element == Card.ElementType.Regular.ToString()))
             {
                 return true;
             }

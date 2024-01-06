@@ -11,11 +11,13 @@ namespace MTCG.src.DataAccess.Persistance.Mappers
         public CardMapper Cards;
         public UserMapper Users;
         public TradeMapper Trades;
+        public TokenMapper Tokens;
         public Mapper()
         {
             Cards = new();
             Users = new();
             Trades = new();
+            Tokens = new();
         }
     }
 }

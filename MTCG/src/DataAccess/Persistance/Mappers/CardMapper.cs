@@ -14,7 +14,7 @@ namespace MTCG.src.DataAccess.Persistance.Mappers
         public CardMapper() { }
         public Card Map(CardDTO cardDTO)
         {
-            return new Card(cardDTO.Id, cardDTO.Element, cardDTO.Type, cardDTO.Monster, cardDTO.Damage);
+            return new Card(cardDTO.Id, cardDTO.User, cardDTO.Name, cardDTO.Element, cardDTO.Type, cardDTO.Monster, cardDTO.Damage);
         }
 
         public CardDTO Map(Card card)
@@ -28,6 +28,11 @@ namespace MTCG.src.DataAccess.Persistance.Mappers
                 Element = card.Element,
                 Monster = card.Monster
             };
+        }
+
+        private void ParseName()
+        {
+
         }
     }
 }

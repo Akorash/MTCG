@@ -32,19 +32,10 @@ namespace MTCG.src.DataAccess.Persistance.Repositories
             IEnumerable<CardDTO> dtos = DbManager.GetAllCards();
             return dtos.Select(dto => Mapper.Map(dto));
         }
-        public IEnumerable<Card> GetPackage()
-        {
-            IEnumerable<CardDTO> dtos = DbManager.GetPackage();
-            return dtos.Select(dto => Mapper.Map(dto));
-        }
         public void Add(Card entity)
         {
             CardDTO dto = Mapper.Map(entity);
             DbManager.AddCard(dto);
-        }
-        public void UpdateUser(Guid id, Guid user_id)
-        {
-            DbManager.UpdateUserInCard(id, user_id);
         }
         public void Delete(Guid id)
         {
@@ -52,6 +43,20 @@ namespace MTCG.src.DataAccess.Persistance.Repositories
             {
                 DbManager.DeleteCard(id);
             }
+        }
+        public IEnumerable<Card> GetPackage()
+        {
+            IEnumerable<CardDTO> dtos = DbManager.GetPackage();
+            return dtos.Select(dto => Mapper.Map(dto));
+        }
+        public IEnumerable<Card> GetDeck(Guid user_id)
+        {
+            IEnumerable<CardDTO> dtos = DbManager.GetDeck(user_id);
+            return dtos.Select(dto => Mapper.Map(dto));
+        }
+        public void UpdateUser(Guid id, Guid user_id)
+        {
+            DbManager.UpdateUserInCard(id, user_id);
         }
     }
 }

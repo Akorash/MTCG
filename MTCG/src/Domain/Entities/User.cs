@@ -1,13 +1,14 @@
 ﻿using MTCG.src.DataAccess.Persistance;
 using Newtonsoft.Json.Linq;
+using Newtonsoft.Json;
 using System.Data;
 using System.Drawing;
 using System.Security.Authentication;
+using System.Security.Cryptography;
 using System.Xml.Linq;
 
 namespace MTCG.src.Domain.Entities
 {
-    [Serializable]
     public class User
     {
         public static int START_COINS = 20;
@@ -34,7 +35,7 @@ namespace MTCG.src.Domain.Entities
             {
                 using (var unitOfWork = new UnitOfWork())
                 {
-                    var user = unitOfWork.Users.GetUserByToken(bearerToken);
+                    var user = unitOfWork.Users.GetByToken(bearerToken);
                     if (user == null)
                     {
                         throw new ArgumentException("Falied to construct user: Token not found");
@@ -69,39 +70,31 @@ namespace MTCG.src.Domain.Entities
         //------------------------- Authentification --------------------------
         public void Register()
         {
+            Id = Guid.NewGuid();
             using (var unitOfWork = new UnitOfWork())
             {
-                if (!Verification.ValidUsername(Username))
-                {
-                    throw new ArgumentException();
-                }
-                // Check whether a user with the same username already exists
+                // Check if username is taken
                 if (unitOfWork.Users.GetIdByUsername(Username) != Guid.Empty)
                 {
                     throw new DuplicateNameException(Username);
                 }
                 // If not, sign the user up
+                Console.WriteLine("User id: " + Id);
                 unitOfWork.Users.Add(this);
             }
         }
-        public void LogIn()
+        public string LogIn()
         {
-            if (!Verification.ValidUsername(Username))
-            {
-                throw new ArgumentException();
-            }
             using (var unitOfWork = new UnitOfWork())
             {
-                var user = unitOfWork.Users.GetUserByUsername(Username);
-
-                if (user == null) // User doesn't exist
+                var user_id = unitOfWork.Users.GetIdByUsername(Username);
+                if (user_id == Guid.Empty) // User doesn't exist
                 {
                     throw new InvalidOperationException("User not registered");
                 }
-                if (!Verification.ValidPassword(Password) || user.Password != Password) // Invlid Password
-                {
-                    throw new InvalidCredentialException();
-                }
+                var bearerToken = new BearerToken(user_id);
+                unitOfWork.Users.AddToken(bearerToken);
+                return bearerToken.Token;
             }
         }
         //---------------------------------------------------------------------
@@ -173,12 +166,12 @@ namespace MTCG.src.Domain.Entities
             // Add requirement: spell or monster 
             // Additionaly Type requirement or Minimum Damage
         }
-        public List<Tradingdeal> ShowTradingDeals()
+        public List<TradingDeal> ShowTradingDeals()
         {
-            List<Tradingdeal> allTrades;
+            List<TradingDeal> allTrades;
             using (var unitOfWork = new UnitOfWork())
             {
-                allTrades = (List<Tradingdeal>)unitOfWork.Trades.GetAll();
+                allTrades = (List<TradingDeal>)unitOfWork.TradingDeals.GetAll();
             }
             return allTrades;
         }
@@ -252,6 +245,14 @@ namespace MTCG.src.Domain.Entities
 
         static class Verification
         {
+            /* if (!Verification.ValidUsername(Username))
+            {
+                throw new ArgumentException();
+            }*/
+            /*if (!Verification.ValidPassword(Password) || user.Password != Password) // Invlid Password
+            {
+                throw new InvalidCredentialException();
+            }*/
             public static bool ValidUsername(string username)
             {
                 if (username == null)

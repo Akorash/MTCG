@@ -39,12 +39,11 @@ namespace MTCG.src.HTTP
         //------------------------- Authentification --------------------------
         public void Register(Socket clientSocket, string reqBody)
         {
-            object body = reqBody; // If the registration is successful, return the request body (user)
-
+            object body = null; // Response body
             try
             {
-                var bearerToken = JsonConvert.DeserializeObject<BearerTokenDTO>(reqBody);
-                var user = new User(bearerToken.BearerToken);
+                var userDTO = JsonConvert.DeserializeObject<UserDTO>(reqBody);
+                var user = _mapper.Users.Map(userDTO);
 
                 user.Register();
                 _status = HttpStatusCode.Created;
@@ -74,9 +73,8 @@ namespace MTCG.src.HTTP
                 var userDTO = JsonConvert.DeserializeObject<UserDTO>(reqBody);
                 var user = _mapper.Users.Map(userDTO);
 
-                user.LogIn();
-                _status = HttpStatusCode.OK;
-                body = user; // description: User login successful
+                body = user.LogIn();
+                _status = HttpStatusCode.OK; // description: User login successful
                 // body content: string authentification token kienkoec-mtcgToken
             }
             catch (ArgumentException e)
@@ -110,7 +108,7 @@ namespace MTCG.src.HTTP
             try 
             {
                 var bearerToken = JsonConvert.DeserializeObject<BearerTokenDTO>(reqBody);
-                var user = new User(bearerToken.BearerToken);
+                var user = new User(bearerToken.Token);
 
                 user.CreatePackage();
                 _status = HttpStatusCode.Created;
@@ -145,7 +143,7 @@ namespace MTCG.src.HTTP
             try
             {
                 var bearerToken = JsonConvert.DeserializeObject<BearerTokenDTO>(reqBody);
-                var user = new User(bearerToken.BearerToken);
+                var user = new User(bearerToken.Token);
 
                 body = user.BuyPackage();
                 _status = HttpStatusCode.OK;
@@ -176,7 +174,7 @@ namespace MTCG.src.HTTP
             try 
             {
                 var bearerToken = JsonConvert.DeserializeObject<BearerTokenDTO>(reqBody);
-                var user = new User(bearerToken.BearerToken);
+                var user = new User(bearerToken.Token);
 
                 user.Battle();
                 _status = HttpStatusCode.OK; // return battle log
@@ -197,7 +195,7 @@ namespace MTCG.src.HTTP
             try
             {
                 var bearerToken = JsonConvert.DeserializeObject<BearerTokenDTO>(reqBody);
-                var user = new User(bearerToken.BearerToken);
+                var user = new User(bearerToken.Token);
 
                 _status = HttpStatusCode.Created;
             }
@@ -237,7 +235,7 @@ namespace MTCG.src.HTTP
             try
             {
                 var bearerToken = JsonConvert.DeserializeObject<BearerTokenDTO>(reqBody);
-                var user = new User(bearerToken.BearerToken);
+                var user = new User(bearerToken.Token);
 
                 _status = HttpStatusCode.Created;
             }
@@ -280,7 +278,7 @@ namespace MTCG.src.HTTP
             try
             {
                 var bearerToken = JsonConvert.DeserializeObject<BearerTokenDTO>(reqBody);
-                var user = new User(bearerToken.BearerToken);
+                var user = new User(bearerToken.Token);
 
                 // Admin auth
 
@@ -305,7 +303,7 @@ namespace MTCG.src.HTTP
             try
             {
                 var bearerToken = JsonConvert.DeserializeObject<BearerTokenDTO>(reqBody);
-                var user = new User(bearerToken.BearerToken);
+                var user = new User(bearerToken.Token);
 
                 body = user.ShowCards();
                 _status = HttpStatusCode.OK;
@@ -327,7 +325,7 @@ namespace MTCG.src.HTTP
             try
             {
                 var bearerToken = JsonConvert.DeserializeObject<BearerTokenDTO>(reqBody);
-                var user = new User(bearerToken.BearerToken);
+                var user = new User(bearerToken.Token);
 
                 body = user.ShowDeck();
                 _status = HttpStatusCode.OK;
@@ -349,7 +347,7 @@ namespace MTCG.src.HTTP
             try
             {
                 var bearerToken = JsonConvert.DeserializeObject<BearerTokenDTO>(reqBody);
-                var user = new User(bearerToken.BearerToken);
+                var user = new User(bearerToken.Token);
 
                 user.Battle();
                 _status = HttpStatusCode.OK; // body = userstats
@@ -371,7 +369,7 @@ namespace MTCG.src.HTTP
             try
             {
                 var bearerToken = JsonConvert.DeserializeObject<BearerTokenDTO>(reqBody);
-                var user = new User(bearerToken.BearerToken);
+                var user = new User(bearerToken.Token);
 
                 user.Battle();
                 _status = HttpStatusCode.OK;
@@ -391,7 +389,7 @@ namespace MTCG.src.HTTP
             try
             {
                 var bearerToken = JsonConvert.DeserializeObject<BearerTokenDTO>(reqBody);
-                var user = new User(bearerToken.BearerToken);
+                var user = new User(bearerToken.Token);
 
             }
             catch (Exception e)

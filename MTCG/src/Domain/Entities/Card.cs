@@ -8,7 +8,6 @@ using System.Threading.Tasks;
 
 namespace MTCG.src.Domain.Entities
 {
-    [Serializable]
     public class Card
     {
         public static readonly int MIN_DAMAGE = 5;
@@ -19,7 +18,7 @@ namespace MTCG.src.Domain.Entities
         {
             Fire = 1,
             Water = 2,
-            Normal = 3
+            Regular = 3
         }
         public enum CardType
         {
@@ -37,17 +36,39 @@ namespace MTCG.src.Domain.Entities
             Dragon = 7,
             Kraken = 8
         }
+        public enum CardNames
+        { 
+            WaterGoblin = 1,
+            FireGoblin = 2, 
+            RegularGoblin = 3, 
+            WaterTroll = 4, 
+            FireTroll = 5, 
+            RegularTroll = 6, 
+            WaterElf = 7, 
+            FireElf = 8, 
+            RegularElf = 9, 
+            WaterSpell = 10,
+            FireSpell = 11, 
+            RegularSpell = 12, 
+            Knight = 13, 
+            Dragon = 14, 
+            Ork = 15, 
+            Kraken = 16
+        }
 
         public Guid Id { get; private set; }
         public Guid? User { get; private set; } 
+        public string Name { get; private set; }
         public string Element { get; private set; }
         public string Type { get; private set; }
         public string? Monster { get; private set; }
         public int Damage { get; private set; }
 
-        public Card(Guid id, string element, string type, string? monster, int damage)
+        public Card(Guid id, Guid? user, string name, string element, string type, string? monster, int damage)
         {
             Id = id;
+            User = user; 
+            Name = name;
             Element = element;
             if (!type.Equals(CardType.Monster.ToString()) || !type.Equals(CardType.Spell.ToString())) 
             {
@@ -55,7 +76,7 @@ namespace MTCG.src.Domain.Entities
             }
             Type = type;
             Monster = monster;
-            if (damage <= 0 || damage > MAX_DAMAGE) 
+            if (damage <= MIN_DAMAGE || damage > MAX_DAMAGE) 
             {
                 throw new ArgumentException("Could not construct Card: Invalid Damage");
             }
@@ -67,11 +88,16 @@ namespace MTCG.src.Domain.Entities
             string type = RandomType();
             if (type == CardType.Spell.ToString())
             {
-                card = new Card(Guid.NewGuid(), RandomElement(), type, null, RandomDamage());
+                string element = RandomElement();
+                string name = $"{element}{CardType.Spell.ToString()}";
+                card = new Card(Guid.NewGuid(), Guid.Empty, name, element, type, null, RandomDamage());
             }
             else
             {
-                card = new Card(Guid.NewGuid(), RandomElement(), type, RandomMonster(), RandomDamage());
+                string element = RandomElement();
+                string monster = RandomMonster();
+                string name = $"{element}{monster}";
+                card = new Card(Guid.NewGuid(), Guid.Empty, name, element, type, monster, RandomDamage());
             }
             return card;
         }

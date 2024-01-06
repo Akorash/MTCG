@@ -15,10 +15,12 @@ namespace MTCG.src.DataAccess.Persistance.Repositories
     {
         protected readonly PostgreSql Context;
         protected readonly UserMapper Mapper;
-        public UserRepository(PostgreSql context, UserMapper mapper)
+        protected readonly TokenMapper TokenMapper;
+        public UserRepository(PostgreSql context, UserMapper mapper, TokenMapper tokenMapper)
         {
             Context = context;
             Mapper = mapper;
+            TokenMapper = tokenMapper;
         }
 
         public User Get(Guid id)
@@ -56,6 +58,11 @@ namespace MTCG.src.DataAccess.Persistance.Repositories
         public Guid GetIdByUsername(string username)
         {
             return Context.GetIdByUsername(username);
+        }
+        public void AddToken(BearerToken token)
+        {
+            var dto = TokenMapper.Map(token);
+            Context.AddToken(dto);
         }
         public void UpdateUser(Guid card_id, Guid user_id) 
         {

@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace MTCG.src.DataAccess.Persistance.DTOs
 {
+    [Serializable]
     public class UserDTO
     {
         public Guid Id { get; set; }

@@ -180,7 +180,7 @@ namespace MTCG.src.DataAccess.Persistance
                                           "JOIN users ON tokens.fk_user = users.user_id " +
                                           "WHERE tokens.token_id = @Token", connection))
                 {
-                    cmd.Parameters.AddWithValue("@Tokens", token);
+                    cmd.Parameters.AddWithValue("@Token", token);
                     using (NpgsqlDataReader reader = cmd.ExecuteReader())
                     {
                         if (reader != null && reader.Read())
@@ -226,6 +226,21 @@ namespace MTCG.src.DataAccess.Persistance
             }
             return Guid.Empty;
         }
+        public void AddToken(BearerTokenDTO token)
+        {
+            using (var connection = new NpgsqlConnection(GetConnectionString()))
+            {
+                connection.Open();
+                using (var cmd = new NpgsqlCommand("INSERT INTO tokens (token_id, fk_user, token, timestamp) VALUES (@Id, @User, @Token, @Timestamp)", connection))
+                {
+                    cmd.Parameters.AddWithValue("@Id", token.Id);
+                    cmd.Parameters.AddWithValue("@User", token.User);
+                    cmd.Parameters.AddWithValue("@Token", token.Token);
+                    cmd.Parameters.AddWithValue("@Timestamp", token.Timestamp);
+                    cmd.ExecuteNonQuery();
+                }
+            }
+        }
         public void UpdateUser(UserDTO user, string[] parameters)
         {
             using (var connection = new NpgsqlConnection(GetConnectionString()))
@@ -266,6 +281,7 @@ namespace MTCG.src.DataAccess.Persistance
                                 {
                                     Id = reader.GetGuid(reader.GetOrdinal("card_id")),
                                     User = reader.GetGuid(reader.GetOrdinal("user")),
+                                    Name = reader.GetString(reader.GetOrdinal("name")),
                                     Type = reader.GetString(reader.GetOrdinal("type")),
                                     Monster = reader.GetString(reader.GetOrdinal("monster")),
                                     Element = reader.GetString(reader.GetOrdinal("element")),
@@ -297,6 +313,7 @@ namespace MTCG.src.DataAccess.Persistance
                                 {
                                     Id = reader.GetGuid(reader.GetOrdinal("card_id")),
                                     User = reader.GetGuid(reader.GetOrdinal("user")),
+                                    Name = reader.GetString(reader.GetOrdinal("name")),
                                     Type = reader.GetString(reader.GetOrdinal("type")),
                                     Monster = reader.GetString(reader.GetOrdinal("monster")),
                                     Element = reader.GetString(reader.GetOrdinal("element")),
@@ -316,10 +333,11 @@ namespace MTCG.src.DataAccess.Persistance
             using (var connection = new NpgsqlConnection(GetConnectionString()))
             {
                 connection.Open();
-                using (NpgsqlCommand cmd = new("INSERT INTO cards (card_id, fk_user, type, monster, element, damage) VALUES (@Id, @Type, @Monster, @Element, @Damage)", connection))
+                using (NpgsqlCommand cmd = new("INSERT INTO cards (card_id, fk_user, name, type, monster, element, damage) VALUES (@Id, @User, @Name, @Type, @Monster, @Element, @Damage)", connection))
                 {
                     cmd.Parameters.AddWithValue("@Id", card.Id);
                     cmd.Parameters.AddWithValue("@User", card.User);
+                    cmd.Parameters.AddWithValue("@Name", card.Name);
                     cmd.Parameters.AddWithValue("@Type", card.Type);
                     cmd.Parameters.AddWithValue("@Monster", card.Monster);
                     cmd.Parameters.AddWithValue("@Element", card.Element);
@@ -358,6 +376,7 @@ namespace MTCG.src.DataAccess.Persistance
                                 {
                                     Id = reader.GetGuid(reader.GetOrdinal("card_id")),
                                     User = reader.GetGuid(reader.GetOrdinal("user")),
+                                    Name = reader.GetString(reader.GetOrdinal("name")),
                                     Type = reader.GetString(reader.GetOrdinal("type")),
                                     Monster = reader.GetString(reader.GetOrdinal("monster")),
                                     Element = reader.GetString(reader.GetOrdinal("element")),
@@ -372,13 +391,14 @@ namespace MTCG.src.DataAccess.Persistance
                 }
             }
         }
-        public List<CardDTO> GetDeck()
+        public List<CardDTO> GetDeck(Guid user_id)
         {
             using (var connection = new NpgsqlConnection(GetConnectionString()))
             {
                 connection.Open();
-                using (var cmd = new NpgsqlCommand("SELECT * FROM deck_cards;", connection))
+                using (var cmd = new NpgsqlCommand("SELECT * FROM deck_cards WHERE user_id = @Id;", connection))
                 {
+                    cmd.Parameters.AddWithValue("@Id", user_id);
                     using (var reader = cmd.ExecuteReader())
                     {
                         if (reader != null && reader.Read())
@@ -390,6 +410,7 @@ namespace MTCG.src.DataAccess.Persistance
                                 {
                                     Id = reader.GetGuid(reader.GetOrdinal("card_id")),
                                     User = reader.GetGuid(reader.GetOrdinal("user")),
+                                    Name = reader.GetString(reader.GetOrdinal("name")),
                                     Type = reader.GetString(reader.GetOrdinal("type")),
                                     Monster = reader.GetString(reader.GetOrdinal("monster")),
                                     Element = reader.GetString(reader.GetOrdinal("element")),
@@ -473,7 +494,7 @@ namespace MTCG.src.DataAccess.Persistance
                                 {
                                     Id = reader.GetGuid(reader.GetOrdinal("trades_id")),
                                     User = reader.GetGuid(reader.GetOrdinal("fk_user")),
-                                    Type = reader.GetString(reader.GetOrdinal("type_requirement")),
+                                    Type = reader.GetString(reader.GetOrdinal("type")),
                                     MinimumDamage = reader.GetInt32(reader.GetOrdinal("minimum_damage"))
                                 };
                                 allTrades.Add(trade);
@@ -530,7 +551,7 @@ namespace MTCG.src.DataAccess.Persistance
                                                         "password VARCHAR(255) NOT NULL, " +
                                                         "name VARCHAR(255), " +
                                                         "bio TEXT, " +
-                                                        "image VARCHAR(255) NOT NULL, " +
+                                                        "image VARCHAR(255), " +
                                                         "elo INT DEFAULT 100, " +
                                                         "wins INT DEFAULT 0, " +
                                                         "looses INT DEFAULT 0, " +
@@ -540,7 +561,7 @@ namespace MTCG.src.DataAccess.Persistance
                     cmd.ExecuteNonQuery();
                 }
             }
-            Console.WriteLine("Database: Table users was created successfully.\n");
+            Console.WriteLine("Database: Table users was created successfully.");
         }
         public void CreateTableCards()
         {
@@ -562,7 +583,7 @@ namespace MTCG.src.DataAccess.Persistance
                     cmd.ExecuteNonQuery();
                 }
             }
-            Console.WriteLine("Database: Table cards was created successfully.\n");
+            Console.WriteLine("Database: Table cards was created successfully.");
         }
         public void CreateTableDeckCards()
         {
@@ -579,15 +600,14 @@ namespace MTCG.src.DataAccess.Persistance
                                                         "type VARCHAR(255) NOT NULL CHECK (type IN ('Spell', 'Monster')), " +
                                                         "monster VARCHAR(255) CHECK (type IN ('Kraken', 'Dragon', 'Ork', 'Elf', 'Goblin', 'Knight', 'Wizzard', 'Troll')), " +
                                                         "element VARCHAR(255) NOT NULL CHECK (element IN ('Normal', 'Fire', 'Water')), " +
-                                                        "damage DECIMAL NOT NULL" +
-                                                        "position INT CHECK (position >= 1 AND position <= 4), " + // TODO Magic numebrs
-                                                        "CONSTRAINT deck_card_id UNIQUE(user_id, card_id)" +
+                                                        "damage DECIMAL NOT NULL, " +
+                                                        "position INT CHECK (position >= 1 AND position <= 4)" + // TODO Magic numebrs
                                                     ");", connection))
                 {
                     cmd.ExecuteNonQuery();
                 }
             }
-            Console.WriteLine("Database: Table packages was created successfully.\n");
+            Console.WriteLine("Database: Table deck_cards was created successfully.");
         }
         public void CreateTableTradingDeals()
         {
@@ -603,14 +623,14 @@ namespace MTCG.src.DataAccess.Persistance
                                                         "fk_user UUID REFERENCES users(user_id), " +
                                                         "fk_card UUID REFERENCES cards(card_id), " +
                                                         "type VARCHAR(50) NOT NULL CHECK (type IN ('Spell', 'Monster')), " +
-                                                        $"minimum_damage DECIMAL CHECK (damage >= {Card.MIN_DAMAGE} AND damage <= {Card.MAX_DAMAGE}), " +
+                                                        $"minimum_damage DECIMAL CHECK (minimum_damage >= {Card.MIN_DAMAGE} AND minimum_damage <= {Card.MAX_DAMAGE}), " +
                                                         "status VARCHAR(50) NOT NULL CHECK (status IN ('Open', 'Closed'))" +
                                                     ");", connection))
                 {
                     cmd.ExecuteNonQuery();
                 }
             }
-            Console.WriteLine("Database: Table trading_deals was created successfully.\n");
+            Console.WriteLine("Database: Table trading_deals was created successfully.");
         }
         public void CreateTableTokens()
         {
@@ -624,13 +644,13 @@ namespace MTCG.src.DataAccess.Persistance
                                                         "token_id UUID PRIMARY KEY, " +
                                                         "fk_user UUID REFERENCES users(user_id), " +
                                                         "token VARCHAR(255) NOT NULL, " +
-                                                        "loginTime TIMESTAMP NOT NULL, " +
+                                                        "timestamp TIMESTAMP NOT NULL " +
                                                     ");", connection))
                 {
                     cmd.ExecuteNonQuery();
                 }
             }
-            Console.WriteLine("Database: Table sessions was created successfully.");
+            Console.WriteLine("Database: Table sessions was created successfully.\n");
         }
         public void CreateSchema()
         {
@@ -657,7 +677,7 @@ namespace MTCG.src.DataAccess.Persistance
                 if (connection != null && connection.State == ConnectionState.Closed) {
                     return;
                 }
-                using (var cmd = new NpgsqlCommand("DROP TABLE IF EXISTS users, cards, deck_cards, trading_deals, tokens;", connection))
+                using (var cmd = new NpgsqlCommand("DROP TABLE IF EXISTS tokens, trading_deals, deck_cards, cards, users CASCADE;", connection))
                 {
                     cmd.ExecuteNonQuery();
                 }

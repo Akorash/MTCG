@@ -19,6 +19,7 @@ namespace MTCG.src.DataAccess.Persistance
         private UserMapper _userMapper;
         private CardMapper _cardMapper;
         private TradeMapper _tradeMapper;
+        private TokenMapper _tokenMapper;
 
         public UnitOfWork()
         {
@@ -26,14 +27,15 @@ namespace MTCG.src.DataAccess.Persistance
             _userMapper = new();
             _cardMapper = new();
             _tradeMapper = new();
+            _tokenMapper = new();
 
-            Users = new UserRepository(_manager, _userMapper);
+            Users = new UserRepository(_manager, _userMapper, _tokenMapper);
             Cards = new CardRepository(_manager, _cardMapper);
-            Trades = new TradeRepository(_manager, _tradeMapper);
+            TradingDeals = new TradingDealRepository(_manager, _tradeMapper);
         }
         public IUserRepository Users { get; private set; } 
         public ICardRepository Cards { get; private set; }
-        public ITradeRepository Trades { get; private set; }
+        public ITradingDealRepository TradingDeals { get; private set; }
         public void Dispose()
         {
             _manager.Dispose();

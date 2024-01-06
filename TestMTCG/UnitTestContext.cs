@@ -19,14 +19,15 @@ namespace TestMTCG
         [TestMethod]
         public void TestUserGet()
         {
+            var userId = Guid.NewGuid();
             var user1 = new UserDTO()
             {
-                Id = 1,
+                Id = userId,
                 Username = "test1",
                 Password = "password1"
             };
 
-            UserDTO result = _context.GetUserById(1);
+            UserDTO result = _context.GetUserById(userId);
 
             Assert.AreEqual(result.Id, user1.Id);
             Assert.AreEqual(result.Username, user1.Username);
@@ -37,7 +38,7 @@ namespace TestMTCG
         {
             var user1 = new UserDTO()
             {
-                Id = 1,
+                Id = Guid.NewGuid(),
                 Username = "test1",
                 Password = "password1"
             };
@@ -51,14 +52,15 @@ namespace TestMTCG
         [TestMethod]
         public void TestCardGet()
         {
+            var cardId = Guid.NewGuid();
             var testCard = new CardDTO()
             {
-                Id = 1,
+                Id = cardId,
                 Damage = 15,
                 Type = "Monster"
             };
 
-            CardDTO result = _context.GetCardById(1);
+            CardDTO result = _context.GetCardById(cardId);
             Assert.AreEqual(result.Id, testCard.Id);
             Assert.AreEqual(result.Damage, testCard.Damage);
             Assert.AreEqual(result.Type, testCard.Type);
@@ -68,16 +70,16 @@ namespace TestMTCG
         {
             var package = new PackageDTO()
             {
-                Id = 1,
-                Card1Id = 1,
-                Card2Id = 2,
-                Card3Id = 3,
-                Card4Id = 4,
-                Card5Id = 5
+                Id = Guid.NewGuid(),
+                Card1Id = Guid.NewGuid(),
+                Card2Id = Guid.NewGuid(),
+                Card3Id = Guid.NewGuid(),
+                Card4Id = Guid.NewGuid(),
+                Card5Id = Guid.NewGuid()
             };
             var user1 = new UserDTO()
             {
-                Id = 1,
+                Id = Guid.NewGuid(),
                 Username = "test1",
                 Password = "password1"
             };
