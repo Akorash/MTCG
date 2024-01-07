@@ -308,7 +308,7 @@ namespace MTCG.src.DataAccess.Persistance
                                     User = reader.GetGuid(reader.GetOrdinal("user")),
                                     Name = reader.GetString(reader.GetOrdinal("name")),
                                     Type = reader.GetString(reader.GetOrdinal("type")),
-                                    Monster = reader.GetString(reader.GetOrdinal("monster")),
+                                    Monster = reader.IsDBNull(reader.GetOrdinal("monster")) ? "" : reader.GetString(reader.GetOrdinal("monster")),
                                     Element = reader.GetString(reader.GetOrdinal("element")),
                                     Damage = reader.GetInt32(reader.GetOrdinal("damage"))
                                 };
@@ -340,7 +340,7 @@ namespace MTCG.src.DataAccess.Persistance
                                     User = reader.GetGuid(reader.GetOrdinal("user")),
                                     Name = reader.GetString(reader.GetOrdinal("name")),
                                     Type = reader.GetString(reader.GetOrdinal("type")),
-                                    Monster = reader.GetString(reader.GetOrdinal("monster")),
+                                    Monster = reader.IsDBNull(reader.GetOrdinal("monster")) ? "" : reader.GetString(reader.GetOrdinal("monster")),
                                     Element = reader.GetString(reader.GetOrdinal("element")),
                                     Damage = reader.GetInt32(reader.GetOrdinal("damage"))
                                 };
@@ -388,7 +388,7 @@ namespace MTCG.src.DataAccess.Persistance
             using (var connection = new NpgsqlConnection(GetConnectionString()))
             {
                 connection.Open();
-                using (var cmd = new NpgsqlCommand("SELECT * FROM cards WHERE user_id IS NULL LIMIT 5;", connection))
+                using (var cmd = new NpgsqlCommand($"SELECT * FROM cards WHERE fk_user = '{GetAdminId()}' LIMIT 5;", connection))
                 {
                     using (var reader = cmd.ExecuteReader())
                     {
@@ -400,10 +400,9 @@ namespace MTCG.src.DataAccess.Persistance
                                 var card = new CardDTO
                                 {
                                     Id = reader.GetGuid(reader.GetOrdinal("card_id")),
-                                    User = reader.GetGuid(reader.GetOrdinal("user")),
-                                    Name = reader.GetString(reader.GetOrdinal("name")),
+                                    User = reader.GetGuid(reader.GetOrdinal("fk_user")),
                                     Type = reader.GetString(reader.GetOrdinal("type")),
-                                    Monster = reader.GetString(reader.GetOrdinal("monster")),
+                                    Monster = reader.IsDBNull(reader.GetOrdinal("monster")) ? "" : reader.GetString(reader.GetOrdinal("monster")),
                                     Element = reader.GetString(reader.GetOrdinal("element")),
                                     Damage = reader.GetInt32(reader.GetOrdinal("damage"))
                                 };
@@ -437,7 +436,7 @@ namespace MTCG.src.DataAccess.Persistance
                                     User = reader.GetGuid(reader.GetOrdinal("user")),
                                     Name = reader.GetString(reader.GetOrdinal("name")),
                                     Type = reader.GetString(reader.GetOrdinal("type")),
-                                    Monster = reader.GetString(reader.GetOrdinal("monster")),
+                                    Monster = reader.IsDBNull(reader.GetOrdinal("monster")) ? "" : reader.GetString(reader.GetOrdinal("monster")),
                                     Element = reader.GetString(reader.GetOrdinal("element")),
                                     Damage = reader.GetInt32(reader.GetOrdinal("damage")),
                                 };

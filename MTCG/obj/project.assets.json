@@ -898,11 +898,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\aisae\\source\\repos\\MTCG\\MTCG\\MTCG.csproj",
+      "projectUniqueName": "C:\\Users\\aisae\\OneDrive\\Escritorio\\Nueva carpeta\\MTCG\\MTCG\\MTCG.csproj",
       "projectName": "MTCG",
-      "projectPath": "C:\\Users\\aisae\\source\\repos\\MTCG\\MTCG\\MTCG.csproj",
+      "projectPath": "C:\\Users\\aisae\\OneDrive\\Escritorio\\Nueva carpeta\\MTCG\\MTCG\\MTCG.csproj",
       "packagesPath": "C:\\Users\\aisae\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\aisae\\source\\repos\\MTCG\\MTCG\\obj\\",
+      "outputPath": "C:\\Users\\aisae\\OneDrive\\Escritorio\\Nueva carpeta\\MTCG\\MTCG\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"

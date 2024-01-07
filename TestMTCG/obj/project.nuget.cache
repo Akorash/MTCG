@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "nxnhwAgzwSHpX2XOvSoxvetU2eQBMf9ArMtcXzzP9Z9YhO6omW+lauBSLlndJPfCIgSImW6zamBnDXKS6UBbXg==",
+  "dgSpecHash": "HcETEv3V4Anc0P1FuzobzmjVHvWNY7L7hEhQdfd1OaFFzvxPewjaKM8oSiMlwnF1nTIANOpnH2ldNL2hKYxGvA==",
   "success": true,
-  "projectFilePath": "C:\\Users\\aisae\\source\\repos\\MTCG\\TestMTCG\\TestMTCG.csproj",
+  "projectFilePath": "C:\\Users\\aisae\\OneDrive\\Escritorio\\Nueva carpeta\\MTCG\\TestMTCG\\TestMTCG.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\aisae\\.nuget\\packages\\castle.core\\5.1.1\\castle.core.5.1.1.nupkg.sha512",
     "C:\\Users\\aisae\\.nuget\\packages\\coverlet.collector\\3.2.0\\coverlet.collector.3.2.0.nupkg.sha512",

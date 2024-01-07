@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "4k8gc5oexdMppXvGqRjxPf1PbMgLEOV/XHClgT/M1K46dP849R+O/K0hCry0erQ3xiwbVcH09BPb2FxRNfY9Sw==",
+  "dgSpecHash": "qfjhqv6f5hwPJ+q1T7avFcjvT+Fkzm3xv6TQ5dGF/XecfyYLP+gezx3G73GhA3ssAcsM1b2NhCaCzEmd276FhA==",
   "success": true,
-  "projectFilePath": "C:\\Users\\aisae\\source\\repos\\MTCG\\MTCG\\MTCG.csproj",
+  "projectFilePath": "C:\\Users\\aisae\\OneDrive\\Escritorio\\Nueva carpeta\\MTCG\\MTCG\\MTCG.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\aisae\\.nuget\\packages\\microsoft.extensions.configuration\\6.0.0\\microsoft.extensions.configuration.6.0.0.nupkg.sha512",
     "C:\\Users\\aisae\\.nuget\\packages\\microsoft.extensions.configuration.abstractions\\6.0.0\\microsoft.extensions.configuration.abstractions.6.0.0.nupkg.sha512",

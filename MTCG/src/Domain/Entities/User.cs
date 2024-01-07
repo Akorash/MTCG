@@ -155,11 +155,11 @@ namespace MTCG.src.Domain.Entities
         }
         public List<Card> BuyPackage()
         {
+            Console.WriteLine(Coins);
             if (!SufficientCoins())
             {
                 throw new InvalidOperationException("Insufficient Coins");
             }
-
             var package = new List<Card>();
             using (var unitOfWork = new UnitOfWork())
             {
@@ -213,7 +213,7 @@ namespace MTCG.src.Domain.Entities
             }
             return new List<Card>();
         }
-        public void RequestTradingDeal()
+        public void RequestTradingDeal() // Unfinished
         {
             // Must not be in deck
             // Locked for further usage
@@ -343,25 +343,11 @@ namespace MTCG.src.Domain.Entities
         }
         private bool SufficientCoins() 
         { 
-            return _coins >= Card.PACK_PRICE; 
+            return Coins >= Card.PACK_PRICE; 
         }
         private bool IsAdmin(Guid id)
         {
             return (id == GetAdminId());
-        }
-        private string GetCardIds(List<Card> list, int length)
-        {
-            if (list.Count <= 0 || list == null)
-            {
-                return string.Empty;
-            }
-
-            string cards = string.Empty;
-            for (int i = 0; i < list.Count; i++)
-            {
-                cards += list[i].Id.ToString() + "\n";
-            }
-            return cards;
         }
         private Guid GetAdminId()
         {

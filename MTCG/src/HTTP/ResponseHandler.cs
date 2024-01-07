@@ -49,6 +49,10 @@ namespace MTCG.src.HTTP
             {
                 var userDTO = JsonConvert.DeserializeObject<UserDTO>(reqBody);
                 var user = _mapper.Users.Map(userDTO);
+                if (user == null)
+                {
+                    throw new ArgumentNullException();
+                }
 
                 user.Register();
                 _status = HttpStatusCode.Created;
@@ -112,6 +116,14 @@ namespace MTCG.src.HTTP
             try 
             {
                 var bearerTokenDTO = JsonConvert.DeserializeObject<BearerTokenDTO>(reqBody);
+                if (bearerTokenDTO == null)
+                {
+                    throw new ArgumentNullException();
+                }
+                if (bearerTokenDTO == null)
+                {
+                    throw new ArgumentNullException();
+                }
                 var user = new User(bearerTokenDTO.Token);
                 
                 body = user.CreatePackage(user.Id);
@@ -151,6 +163,10 @@ namespace MTCG.src.HTTP
             try
             {
                 var bearerToken = JsonConvert.DeserializeObject<BearerTokenDTO>(reqBody);
+                if (bearerToken == null)
+                {
+                    throw new ArgumentNullException();
+                }
                 var user = new User(bearerToken.Token);
 
                 body = user.BuyPackage();
@@ -163,7 +179,7 @@ namespace MTCG.src.HTTP
             }
             catch (InvalidOperationException e)
             {
-                _status = HttpStatusCode.Forbidden;//403 Not enough money
+                _status = HttpStatusCode.Forbidden;// 403 Not enough money
                 Console.WriteLine($"Failed to aquire package due to insufficient coins: {e.Message}");
             }
             catch (Exception e)
@@ -182,6 +198,14 @@ namespace MTCG.src.HTTP
             try 
             {
                 var bearerToken = JsonConvert.DeserializeObject<BearerTokenDTO>(reqBody);
+                if (bearerToken == null)
+                {
+                    throw new ArgumentNullException();
+                }
+                if (bearerToken == null)
+                {
+                    throw new ArgumentNullException();
+                }
                 var user = new User(bearerToken.Token);
 
                 user.Battle(); // Add user to the battle queue
@@ -204,6 +228,14 @@ namespace MTCG.src.HTTP
             try
             {
                 var bearerToken = JsonConvert.DeserializeObject<BearerTokenDTO>(reqBody);
+                if (bearerToken == null)
+                {
+                    throw new ArgumentNullException();
+                }
+                if (bearerToken == null)
+                {
+                    throw new ArgumentNullException();
+                }
                 var user = new User(bearerToken.Token);
 
                 _status = HttpStatusCode.Created;
@@ -244,6 +276,14 @@ namespace MTCG.src.HTTP
             try
             {
                 var bearerToken = JsonConvert.DeserializeObject<BearerTokenDTO>(reqBody);
+                if (bearerToken == null)
+                {
+                    throw new ArgumentNullException();
+                }
+                if (bearerToken == null)
+                {
+                    throw new ArgumentNullException();
+                }
                 var card = JsonConvert.DeserializeObject<CardDTO>(reqBody);
                 var other = JsonConvert.DeserializeObject<UserDTO>(reqBody);
                 var user = new User(bearerToken.Token);
@@ -290,6 +330,14 @@ namespace MTCG.src.HTTP
             try
             {
                 var bearerToken = JsonConvert.DeserializeObject<BearerTokenDTO>(reqBody);
+                if (bearerToken == null)
+                {
+                    throw new ArgumentNullException();
+                }
+                if (bearerToken == null)
+                {
+                    throw new ArgumentNullException();
+                }
                 var other = JsonConvert.DeserializeObject<UserDTO>(reqBody);
                 var user = new User(bearerToken.Token);
 
@@ -317,6 +365,14 @@ namespace MTCG.src.HTTP
             try
             {
                 var bearerToken = JsonConvert.DeserializeObject<BearerTokenDTO>(reqBody);
+                if (bearerToken == null)
+                {
+                    throw new ArgumentNullException();
+                }
+                if (bearerToken == null)
+                {
+                    throw new ArgumentNullException();
+                }
                 var user = new User(bearerToken.Token);
 
                 body = user.ShowCards();
@@ -342,6 +398,14 @@ namespace MTCG.src.HTTP
             try
             {
                 var bearerToken = JsonConvert.DeserializeObject<BearerTokenDTO>(reqBody);
+                if (bearerToken == null)
+                {
+                    throw new ArgumentNullException();
+                }
+                if (bearerToken == null)
+                {
+                    throw new ArgumentNullException();
+                }
                 var user = new User(bearerToken.Token);
 
                 body = user.ShowDeck();
@@ -367,6 +431,14 @@ namespace MTCG.src.HTTP
             try
             {
                 var bearerToken = JsonConvert.DeserializeObject<BearerTokenDTO>(reqBody);
+                if (bearerToken == null)
+                {
+                    throw new ArgumentNullException();
+                }
+                if (bearerToken == null)
+                {
+                    throw new ArgumentNullException();
+                }
                 var user = new User(bearerToken.Token);
 
                 body = user.ViewStats();
@@ -392,6 +464,14 @@ namespace MTCG.src.HTTP
             try
             {
                 var bearerToken = JsonConvert.DeserializeObject<BearerTokenDTO>(reqBody);
+                if (bearerToken == null)
+                {
+                    throw new ArgumentNullException();
+                }
+                if (bearerToken == null)
+                {
+                    throw new ArgumentNullException();
+                }
                 var user = new User(bearerToken.Token);
 
                 body = user.ViewScoreBoard();
@@ -418,6 +498,14 @@ namespace MTCG.src.HTTP
             try
             {
                 var bearerToken = JsonConvert.DeserializeObject<BearerTokenDTO>(reqBody);
+                if (bearerToken == null)
+                {
+                    throw new ArgumentNullException();
+                }
+                if (bearerToken == null)
+                {
+                    throw new ArgumentNullException();
+                }
                 var user = new User(bearerToken.Token);
 
                 body = user.ShowTradingDeals();
@@ -452,6 +540,14 @@ namespace MTCG.src.HTTP
             try
             {
                 var bearerToken = JsonConvert.DeserializeObject<BearerTokenDTO>(reqBody);
+                if (bearerToken == null)
+                {
+                    throw new ArgumentNullException();
+                }
+                if (bearerToken == null)
+                {
+                    throw new ArgumentNullException();
+                }
                 var other = JsonConvert.DeserializeObject<UserDTO>(reqBody);
                 var user = new User(bearerToken.Token);
 
@@ -478,6 +574,14 @@ namespace MTCG.src.HTTP
             try
             {
                 var bearerToken = JsonConvert.DeserializeObject<BearerTokenDTO>(reqBody);
+                if (bearerToken == null)
+                {
+                    throw new ArgumentNullException();
+                }
+                if (bearerToken == null)
+                {
+                    throw new ArgumentNullException();
+                }
                 var deckDTO = JsonConvert.DeserializeObject<DeckDTO>(reqBody);
                 var user = new User(bearerToken.Token);
 
@@ -509,6 +613,14 @@ namespace MTCG.src.HTTP
             try
             {
                 var bearerToken = JsonConvert.DeserializeObject<BearerTokenDTO>(reqBody);
+                if (bearerToken == null)
+                {
+                    throw new ArgumentNullException();
+                }
+                if (bearerToken == null)
+                {
+                    throw new ArgumentNullException();
+                }
                 var deckDTO = JsonConvert.DeserializeObject<DeckDTO>(reqBody);
                 var user = new User(bearerToken.Token);
 

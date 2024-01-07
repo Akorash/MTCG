@@ -71,7 +71,7 @@ namespace MTCG.src.Domain.Entities
             User = user; 
             Name = name;
             Element = element;
-            if (!type.Equals(CardType.Monster.ToString()) || !type.Equals(CardType.Spell.ToString())) 
+            if (!type.Equals(CardType.Monster.ToString()) && !type.Equals(CardType.Spell.ToString())) 
             {
                 throw new ArgumentException("Could not construct Card: Invalid Type");
             }
