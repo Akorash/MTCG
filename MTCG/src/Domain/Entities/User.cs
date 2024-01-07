@@ -168,6 +168,12 @@ namespace MTCG.src.Domain.Entities
                 {
                     throw new Exception("No card package available for buying");
                 }
+                foreach (var card in package)
+                {
+                    unitOfWork.Cards.UpdateUser(card.Id, Id);
+                }
+                Coins -= Card.PACK_PRICE;
+                unitOfWork.Users.Update(this);
             }
             return package;
         }

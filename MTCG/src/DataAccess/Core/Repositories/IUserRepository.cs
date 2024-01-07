@@ -14,6 +14,6 @@ namespace MTCG.src.DataAccess.Core.Repositories
         public User GetByUsername(string username);
         public User GetByToken(string token);
         public void AddToken(BearerToken token);
-        public void UpdateUser(Guid card_id, Guid user_id);
+        public void Update(User user);
     }
 }

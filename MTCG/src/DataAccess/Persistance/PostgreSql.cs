@@ -266,16 +266,21 @@ namespace MTCG.src.DataAccess.Persistance
             }
             return string.Empty;
         }
-        public void UpdateUser(UserDTO user, string[] parameters)
+        public void UpdateUser(UserDTO user)
         {
+            Console.WriteLine("update user");
             using (var connection = new NpgsqlConnection(GetConnectionString()))
             {
                 connection.Open();
-                using (var cmd = new NpgsqlCommand("UPDATE users SET username = @Username, password = @Password WHERE user_id = @Id", connection))
+                using (var cmd = new NpgsqlCommand("UPDATE users SET username = @Username, password = @Password, name = @Name, bio = @Bio, image = @Image, coins = @Coins WHERE user_id = @Id", connection))
                 {
                     cmd.Parameters.AddWithValue("@Id", user.Id);
                     cmd.Parameters.AddWithValue("@Username", user.Username);
                     cmd.Parameters.AddWithValue("@Password", user.Password);
+                    cmd.Parameters.AddWithValue("@Name", user.Name ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@Bio", user.Bio ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@Image", user.Image ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@Coins", user.Coins);
                     cmd.ExecuteNonQuery();
                 }
             }
@@ -397,6 +402,7 @@ namespace MTCG.src.DataAccess.Persistance
                             var packet = new List<CardDTO>();
                             while (reader.Read())
                             {
+                                Console.WriteLine("getpackage");
                                 var card = new CardDTO
                                 {
                                     Id = reader.GetGuid(reader.GetOrdinal("card_id")),
@@ -451,6 +457,7 @@ namespace MTCG.src.DataAccess.Persistance
         }
         public void UpdateUserInCard(Guid card_id, Guid user_id)
         {
+            Console.WriteLine("update user in card");
             using (var connection = new NpgsqlConnection(GetConnectionString()))
             {
                 connection.Open();

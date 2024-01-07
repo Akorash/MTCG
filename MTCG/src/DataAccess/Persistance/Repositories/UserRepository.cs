@@ -64,9 +64,10 @@ namespace MTCG.src.DataAccess.Persistance.Repositories
             var dto = TokenMapper.Map(token);
             Context.AddToken(dto);
         }
-        public void UpdateUser(Guid card_id, Guid user_id) 
+        public void Update(User user)
         {
-            Context.UpdateUserInCard(card_id, user_id);
+            var dto = Mapper.Map(user);
+            Context.UpdateUser(dto);
         }
     }
 }
