@@ -16,10 +16,18 @@ namespace MTCG.src.DataAccess.Persistance.Mappers
         public UserMapper() { }
         public User Map(UserDTO userDTO)
         {
+            if (userDTO == null)
+            {
+                return null;
+            }
             return new User(userDTO.Id, userDTO.BearerToken, userDTO.Username, userDTO.Password, userDTO.Name, userDTO.Bio, userDTO.Image, userDTO.Coins);
         }
         public UserDTO Map(User user)
         {
+            if (user == null)
+            {
+                return null;
+            }
             return new UserDTO()
             {
                 Id = user.Id,

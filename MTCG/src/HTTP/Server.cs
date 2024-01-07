@@ -91,7 +91,7 @@ namespace MTCG.src.HTTP
             Console.WriteLine($"Debug: {body}");
             switch (url)
             {
-                case "/users/{username}": //
+                case "/users/{username}": 
                     _rh.RetrieveUserData(clientSocket, body);
                     break;
                 case "/cards":
@@ -116,7 +116,6 @@ namespace MTCG.src.HTTP
         }
         private void HandlePost(Socket clientSocket, string url, string body)
         {
-            Console.WriteLine($"Debug: {body}");
             switch (url)
             {
                 case "/users": 

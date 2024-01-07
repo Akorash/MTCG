@@ -6,6 +6,8 @@ using System.Drawing;
 using System.Security.Authentication;
 using System.Security.Cryptography;
 using System.Xml.Linq;
+using Microsoft.Extensions.Configuration;
+using MTCG.src.DataAccess.Persistance.DTOs;
 
 namespace MTCG.src.Domain.Entities
 {
@@ -16,7 +18,7 @@ namespace MTCG.src.Domain.Entities
         private int _coins;
 
         public Guid Id { get; private set; }
-        public string BearerToken { get; private set; } 
+        public string? BearerToken { get; private set; } 
         public string Username { get; private set; }
         public string Password { get; private set; }
         public string? Name { get; private set; }
@@ -29,16 +31,21 @@ namespace MTCG.src.Domain.Entities
         
         public List<Card> Deck { get; private set; }
 
-        public User(string bearerToken)
+        public User(string bearerToken) // Checks if the token is valid
         {
+            if (bearerToken == null || bearerToken == string.Empty )
+            {
+                throw new ArgumentNullException(nameof(bearerToken));
+            }
             try
             {
                 using (var unitOfWork = new UnitOfWork())
                 {
+                    // TODO: Check if expired --> Add _context.GetToken to user repository 
                     var user = unitOfWork.Users.GetByToken(bearerToken);
                     if (user == null)
                     {
-                        throw new ArgumentException("Falied to construct user: Token not found");
+                        throw new ArgumentException("Invalid Token");
                     }
                     Id = user.Id;
                     BearerToken = user.BearerToken;
@@ -58,6 +65,27 @@ namespace MTCG.src.Domain.Entities
         public User(Guid id, string token, string username, string password, string name, string bio, string image, int coins)
         {
             Id = id;
+            BearerToken = token;
+            Username = username;
+            Password = password;
+            Name = name;
+            Bio = password;
+            Image = password;
+            Coins = coins;
+        }
+        public User(string token, string username, string password, string name, string bio, string image, int coins)
+        {
+            try
+            {
+                using (var unitOfWork = new UnitOfWork())
+                {
+                    Id = unitOfWork.Users.GetIdByUsername(username);
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+            }
             BearerToken = token;
             Username = username;
             Password = password;
@@ -87,35 +115,46 @@ namespace MTCG.src.Domain.Entities
         {
             using (var unitOfWork = new UnitOfWork())
             {
-                var user_id = unitOfWork.Users.GetIdByUsername(Username);
-                if (user_id == Guid.Empty) // User doesn't exist
+                var user = unitOfWork.Users.GetByUsername(Username);
+                if (user == null) // User doesn't exist
                 {
                     throw new InvalidOperationException("User not registered");
                 }
-                var bearerToken = new BearerToken(user_id);
+                if (Password != user.Password) // User doesn't exist
+                {
+                    throw new InvalidCredentialException("Passwords don't match");
+                }
+                // Create and store token in database
+                Id = unitOfWork.Users.GetIdByUsername(Username);
+                var bearerToken = new BearerToken(Id);
                 unitOfWork.Users.AddToken(bearerToken);
                 return bearerToken.Token;
             }
         }
         //---------------------------------------------------------------------
         //------------------------------ Cards --------------------------------
-        public List<Card> CreatePackage() // Can only be done by admin
+        public List<Card> CreatePackage(Guid id)
         {
-            // TOOD Check token for admin
-            if (!IsAdmin())
+            if (!IsAdmin(id))
             {
-                return null;
+                throw new HttpRequestException("Not Admin");
+            }
+            var package = Card.GeneratePackage();
+            if (package == null)
+            {
+                throw new Exception("Failed to generate package");
             }
             using (var unitOfWork = new UnitOfWork())
             {
-                List<Card> cards = (List<Card>)unitOfWork.Cards.GetPackage();
-                return cards;
+                foreach (var card in package)
+                {
+                    unitOfWork.Cards.Add(card);
+                }
+                return package;
             }
         }
         public List<Card> BuyPackage()
         {
-            // TODO UnauthorizedError --> Check Auth Token
-
             if (!SufficientCoins())
             {
                 throw new InvalidOperationException("Insufficient Coins");
@@ -137,6 +176,10 @@ namespace MTCG.src.Domain.Entities
             using (var unitOfWork = new UnitOfWork())
             {
                 var cards = (List<Card>)unitOfWork.Cards.GetAll();
+                if (cards == null)
+                {
+                    throw new Exception("No cards");
+                }
                 return cards;
             }
         }
@@ -144,20 +187,31 @@ namespace MTCG.src.Domain.Entities
         {
             using (var unitOfWork = new UnitOfWork())
             {
-                var deckId = new List<int>();
-                var user = unitOfWork.Users.Get(Id);
-
-
-
-                // For each cardId in deckIds,
-                // List<Card> deck add(GetCardById(cardId)) 
-
+                var cards = (List<Card>)unitOfWork.Cards.GetDeck(Id);
+                if (cards == null)
+                {
+                    throw new Exception("No cards");
+                }
+                return cards;
+            }
+        }
+        public List<Card> ConfigureDeck(List<Guid> card_ids) // Unfinished
+        {
+            if (card_ids == null)
+            {
+                throw new ArgumentNullException();
+            }
+            using (var unitOfWork = new UnitOfWork())
+            {
+                // unitOfWork.Users.UpdateDeck // TODO: Create UpdateDeck statement and add to UserRepository
+                // var result = unitOfWork.Users.GetDeck(Id);
+                // if (result == null)
+                // {
+                //     throw new Exception("Failed to reconfigure deck");
+                // }
+                // return result;
             }
             return new List<Card>();
-        }
-        public void ConfigureDeck()
-        {
-
         }
         public void RequestTradingDeal()
         {
@@ -173,15 +227,107 @@ namespace MTCG.src.Domain.Entities
             {
                 allTrades = (List<TradingDeal>)unitOfWork.TradingDeals.GetAll();
             }
+            if (allTrades == null)
+            {
+                throw new Exception("No trading deals available");
+            }
             return allTrades;
         }
         public void Trade(Card card, User other)
         {
             using (var unitOfWork = new UnitOfWork())
             {
-                unitOfWork.Cards.UpdateUser(card.Id, other.Id);
+                unitOfWork.Cards.UpdateUser(card.Id, other.Id); // Change the user_id to the new owner
             }
         }
+
+        //---------------------------------------------------------------------
+        //------------------------- Other Actions ----------------------------
+        public void Battle() // Unfinished
+        {
+            // TODO: Signal the server (Game) to put you in the battle queue
+            
+            // TODO: Wait for the server to send you the response
+        }
+        public List<string> ViewProfile()
+        {
+            return new List<string>() { Username, Name, Bio, Image };
+        }
+        public User ChangeProfile(string name, string bio, string image) // Unfinished
+        {
+            using (var unitOfWork = new UnitOfWork())
+            {
+                // unitOfWork.Users.UpdateUser(Username, name, bio, image);
+                // var user = unitOfWork.Users.GetByUsername(Username);
+                // if (user.Name != name || user.Bio != bio || user.Image != image)
+                //{
+                //     throw new Exception($"Could not change {Username}'s profile");
+                //}
+                // return user;
+            }
+            return this;
+        }
+        public List<string> ViewStats() // Unfinished
+        {
+            using (var unitOfWork = new UnitOfWork())
+            {
+                // TODO: Add GetStats to UserRepository, retrieve elo, wins and looses
+            }
+            // Temporary return value
+            var stats = new List<string>();
+            return stats;
+        }
+        public List<User> ViewScoreBoard() // Unfinished
+        {
+            using (var unitOfWork = new UnitOfWork())
+            {
+                // TODO: Create GetScoreboard function and add it to UserRepository
+            }
+            // Temporary return value
+            var scoreboard = new List<User>();
+            return scoreboard;
+        }
+        public User ViewUserData(string usernameOther)
+        {
+            if (!IsAdmin(Id))
+            {
+                throw new HttpRequestException("Not Admin");
+            }
+            using (var unitOfWork = new UnitOfWork())
+            {
+                var user = unitOfWork.Users.GetByUsername(usernameOther);
+                if (user == null)
+                {
+                    throw new ArgumentException("Invalid username");
+                }
+                return user;
+            }
+        }
+        public User UpdateUserData(User other) // Unfinished
+        {
+            if (other == null)
+            {
+                throw new ArgumentException("No data corresponding the user to be updated was provided");
+            }
+            if (!IsAdmin(Id))
+            {
+                throw new HttpRequestException("Not Admin");
+            }
+            using (var unitOfWork = new UnitOfWork())
+            {
+                // unitOfWork.Users.UpdateUser(other);
+                // var result = unitOfWork.Users.GetByUsername(other.Username);
+                // if (result == null)
+                // {
+                //     throw new Exception("Failed to update user");
+                // }
+                // return result;
+            }
+            return this;
+        }
+
+        //---------------------------------------------------------------------
+        //------------------------- Helper Methods ----------------------------
         public void AddToDeck(Card card)
         {
             Deck.Add(card);
@@ -191,42 +337,17 @@ namespace MTCG.src.Domain.Entities
             int index = Deck.IndexOf(card);
             Deck.RemoveAt(index);
         }
-        //---------------------------------------------------------------------
-        //------------------------- Other Actions ----------------------------
-        public void Battle()
+        public void SetDeck(List<Card> deck)
         {
-            // If a player is logged in
-
-            // Signal the server (Game) to put you on the waiting list
-            // And, send the server your deck (?) and Id
+            this.Deck = deck;
         }
-        public void ViewProfile()
-        {
-
-        }
-        public void ChangeProfile()
-        {
-
-        }
-
-        //---------------------------------------------------------------------
-        //------------------------- Helper Methods ----------------------------
-
         private bool SufficientCoins() 
         { 
             return _coins >= Card.PACK_PRICE; 
         }
-        private bool CorrectPassword() 
-        { 
-            return true; 
-        }
-        private bool IsAdmin()
+        private bool IsAdmin(Guid id)
         {
-            return true;
-        }
-        private string GenerateUUID()
-        {
-            return "hello";
+            return (id == GetAdminId());
         }
         private string GetCardIds(List<Card> list, int length)
         {
@@ -242,7 +363,24 @@ namespace MTCG.src.Domain.Entities
             }
             return cards;
         }
+        private Guid GetAdminId()
+        {
+            try
+            {
+                IConfiguration configuration = new ConfigurationBuilder()
+                .AddUserSecrets("c6fa29a4-4f91-480b-8eae-dcee24e8d186")
+                .Build();
 
+                return Guid.Parse(configuration["AdminId"]);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                return Guid.Empty;
+            }
+        }
+
+        //---------------------------------------------------------------------
         static class Verification
         {
             /* if (!Verification.ValidUsername(Username))

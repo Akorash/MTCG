@@ -1,8 +1,11 @@
 using System.Runtime.CompilerServices;
 
+using MTCG.src.Domain.Entities;
 using MTCG.src.DataAccess.Persistance;
 using MTCG.src.DataAccess.Persistance.DTOs;
+using MTCG.src.DataAccess.Persistance.Mappers;
 using MTCG.src.DataAccess.Persistance.Repositories;
+using System.ComponentModel.DataAnnotations;
 
 namespace TestMTCG
 {
@@ -10,61 +13,65 @@ namespace TestMTCG
     public class UnitTestContext
     {
         private readonly PostgreSql _context;
+        private readonly UserMapper _Umapper;
+        private readonly TokenMapper _Tokmapper;
 
         public UnitTestContext()
         {
             _context = new();
+            _Umapper = new();
+            _Tokmapper = new();
         }
 
         [TestMethod]
-        public void TestUserGet()
+        public void TestGetUserById()
         {
             var userId = Guid.NewGuid();
-            var user1 = new UserDTO()
+            var user = new UserDTO()
             {
                 Id = userId,
-                Username = "test1",
-                Password = "password1"
+                Username = "test4",
+                Password = "password4"
             };
+            _context.AddUser(user);
 
             UserDTO result = _context.GetUserById(userId);
 
-            Assert.AreEqual(result.Id, user1.Id);
-            Assert.AreEqual(result.Username, user1.Username);
-            Assert.AreEqual(result.Password, user1.Password);
+            Assert.AreEqual(result.Id, user.Id);
+            Assert.AreEqual(result.Username, user.Username);
+            Assert.AreEqual(result.Password, user.Password);
         }
         [TestMethod]
         public void TestUserGetByUsername()
         {
-            var user1 = new UserDTO()
+            var user = new UserDTO()
             {
-                Id = Guid.NewGuid(),
                 Username = "test1",
-                Password = "password1"
+                Password = "password1",
+                Name = "Juan",
+                Bio = "hola guacamola"
             };
-
             UserDTO result = _context.GetUserByUsername("test1");
 
-            Assert.AreEqual(result.Id, user1.Id);
-            Assert.AreEqual(result.Username, user1.Username);
-            Assert.AreEqual(result.Password, user1.Password);
+            Assert.AreEqual(result.Username, user.Username);
+            Assert.AreEqual(result.Password, user.Password);
+            Assert.AreEqual(result.Name, user.Name);
+            Assert.AreEqual(result.Bio, user.Bio);
+            Assert.AreEqual(result.Image, user.Image);
         }
         [TestMethod]
-        public void TestCardGet()
+        public void TestToken() 
         {
-            var cardId = Guid.NewGuid();
-            var testCard = new CardDTO()
-            {
-                Id = cardId,
-                Damage = 15,
-                Type = "Monster"
-            };
+            var user = _context.GetUserByUsername("aisa");
+            var response = _context.GetToken(user.Username);
 
-            CardDTO result = _context.GetCardById(cardId);
-            Assert.AreEqual(result.Id, testCard.Id);
-            Assert.AreEqual(result.Damage, testCard.Damage);
-            Assert.AreEqual(result.Type, testCard.Type);
+            var responseUser = _context.GetUserByToken(response);
+
+            Assert.AreNotEqual(user.Id, Guid.Empty);
+            Assert.IsNotNull(response);
+            Assert.AreEqual(responseUser.Username, user.Username);
         }
+
         [TestMethod]
         public void TestGetPackage()
         {

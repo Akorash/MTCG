@@ -13,7 +13,8 @@ namespace MTCG.src.Domain.Entities
         public static readonly int MIN_DAMAGE = 5;
         public static readonly int MAX_DAMAGE = 100;
         public static readonly int PACK_PRICE = 5;
-        private readonly int DAMAGE_INCREMENTS = 5;
+        private static readonly int DAMAGE_INCREMENTS = 5;
+        private static readonly int CARDS_IN_PACKAGE = 4;
         public enum ElementType
         {
             Fire = 1,
@@ -82,7 +83,17 @@ namespace MTCG.src.Domain.Entities
             }
             Damage = damage;
         }
-        public Card GenerateCard()
+        
+        public static List<Card> GeneratePackage()
+        {
+            var package = new List<Card>();
+            for (int i = 0; i < CARDS_IN_PACKAGE; i++)
+            {
+                package.Add(GenerateCard());
+            }
+            return package;
+        }
+        public static Card GenerateCard()
         {
             Card card;
             string type = RandomType();
@@ -101,28 +112,28 @@ namespace MTCG.src.Domain.Entities
             }
             return card;
         }
-        private string RandomElement()
+        private static string RandomElement()
         {
             var random = new Random();
             var elementTypes = (Card.ElementType[])Enum.GetValues(typeof(ElementType));
             int index = random.Next(0, Enum.GetValues(typeof(ElementType)).Length);
             return elementTypes[index].ToString();
         }
-        private string RandomType()
+        private static string RandomType()
         {
             var random = new Random();
             var cardTypes = (CardType[])Enum.GetValues(typeof(CardType));
             int index = random.Next(0, Enum.GetValues(typeof(CardType)).Length);
             return cardTypes[index].ToString();
         }
-        private string RandomMonster()
+        private static string RandomMonster()
         {
             var random = new Random();
             var monsterTypes = (MonsterType[])Enum.GetValues(typeof(MonsterType));
             int index = random.Next(0, Enum.GetValues(typeof(MonsterType)).Length);
             return monsterTypes[index].ToString();
         }
-        private int RandomDamage()
+        private static int RandomDamage()
         {
             var random = new Random();
             int randomIncrement = random.Next(1, MAX_DAMAGE/DAMAGE_INCREMENTS + 1);

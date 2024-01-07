@@ -15,6 +15,7 @@ using MTCG.src.Domain.Entities;
 using MTCG.src.DataAccess.Persistance.DTOs;
 using MTCG.src.DataAccess.Persistance.Mappers;
 using Newtonsoft.Json.Linq;
+using NpgsqlTypes;
 
 namespace MTCG.src.DataAccess.Persistance
 {
@@ -54,12 +55,12 @@ namespace MTCG.src.DataAccess.Persistance
                                 var user = new UserDTO
                                 {
                                     Id = reader.GetGuid(reader.GetOrdinal("user_id")),
-                                    BearerToken = reader.GetString(reader.GetOrdinal("name")),
+                                    BearerToken = reader.GetString(reader.GetOrdinal("username")),
                                     Username = reader.GetString(reader.GetOrdinal("username")),
                                     Password = reader.GetString(reader.GetOrdinal("password")),
-                                    Name = reader.GetString(reader.GetOrdinal("name")),
-                                    Bio = reader.GetString(reader.GetOrdinal("bio")),
-                                    Image = reader.GetString(reader.GetOrdinal("image")),
+                                    Name = reader.IsDBNull(reader.GetOrdinal("name")) ? "" : reader.GetString(reader.GetOrdinal("name")),
+                                    Bio = reader.IsDBNull(reader.GetOrdinal("bio")) ? "" : reader.GetString(reader.GetOrdinal("bio")),
+                                    Image = reader.IsDBNull(reader.GetOrdinal("image")) ? "" : reader.GetString(reader.GetOrdinal("image")),
                                     Elo = reader.GetInt32(reader.GetOrdinal("elo")),
                                     Wins = reader.GetInt32(reader.GetOrdinal("wins")),
                                     Looses = reader.GetInt32(reader.GetOrdinal("looses")),
@@ -90,12 +91,12 @@ namespace MTCG.src.DataAccess.Persistance
                                 var user = new UserDTO
                                 {
                                     Id = reader.GetGuid(reader.GetOrdinal("user_id")),
-                                    BearerToken = reader.GetString(reader.GetOrdinal("token")),
+                                    BearerToken = reader.GetString(reader.GetOrdinal("username")),
                                     Username = reader.GetString(reader.GetOrdinal("username")),
                                     Password = reader.GetString(reader.GetOrdinal("password")),
-                                    Name = reader.GetString(reader.GetOrdinal("name")),
-                                    Bio = reader.GetString(reader.GetOrdinal("bio")),
-                                    Image = reader.GetString(reader.GetOrdinal("image")),
+                                    Name = reader.IsDBNull(reader.GetOrdinal("name")) ? "" : reader.GetString(reader.GetOrdinal("name")),
+                                    Bio = reader.IsDBNull(reader.GetOrdinal("bio")) ? "" : reader.GetString(reader.GetOrdinal("bio")),
+                                    Image = reader.IsDBNull(reader.GetOrdinal("image")) ? "" : reader.GetString(reader.GetOrdinal("image")),
                                     Elo = reader.GetInt32(reader.GetOrdinal("elo")),
                                     Wins = reader.GetInt32(reader.GetOrdinal("wins")),
                                     Looses = reader.GetInt32(reader.GetOrdinal("looses")),
@@ -155,9 +156,9 @@ namespace MTCG.src.DataAccess.Persistance
                                 BearerToken = reader.GetString(reader.GetOrdinal("username")),
                                 Username = reader.GetString(reader.GetOrdinal("username")),
                                 Password = reader.GetString(reader.GetOrdinal("password")),
-                                Name = reader.GetString(reader.GetOrdinal("name")),
-                                Bio = reader.GetString(reader.GetOrdinal("bio")),
-                                Image = reader.GetString(reader.GetOrdinal("image")),
+                                Name = reader.IsDBNull(reader.GetOrdinal("name")) ? string.Empty : reader.GetString(reader.GetOrdinal("name")),
+                                Bio = reader.IsDBNull(reader.GetOrdinal("bio")) ? string.Empty : reader.GetString(reader.GetOrdinal("bio")),
+                                Image = reader.IsDBNull(reader.GetOrdinal("image")) ? string.Empty : reader.GetString(reader.GetOrdinal("image")),
                                 Elo = reader.GetInt32(reader.GetOrdinal("elo")),
                                 Wins = reader.GetInt32(reader.GetOrdinal("wins")),
                                 Looses = reader.GetInt32(reader.GetOrdinal("looses")),
@@ -175,12 +176,13 @@ namespace MTCG.src.DataAccess.Persistance
             using (var connection = new NpgsqlConnection(GetConnectionString()))
             {
                 connection.Open();
-                using (var cmd = new NpgsqlCommand("SELECT users.user_id, users.username, users.password " +
+                using (var cmd = new NpgsqlCommand("SELECT users.user_id, users.username, users.password, users.name, users.bio, users.image, users.elo, users.wins, users.looses, users.coins " +
                                           "FROM tokens " +
                                           "JOIN users ON tokens.fk_user = users.user_id " +
-                                          "WHERE tokens.token_id = @Token", connection))
+                                          "WHERE tokens.token = @Token", connection))
                 {
-                    cmd.Parameters.AddWithValue("@Token", token);
+                    // cmd.Parameters.AddWithValue("@Token", token);
+                    cmd.Parameters.AddWithValue("@Token", NpgsqlDbType.Varchar, token);
                     using (NpgsqlDataReader reader = cmd.ExecuteReader())
                     {
                         if (reader != null && reader.Read())
@@ -189,12 +191,12 @@ namespace MTCG.src.DataAccess.Persistance
                             var user = new UserDTO
                             {
                                 Id = reader.GetGuid(reader.GetOrdinal("user_id")),
-                                BearerToken = token,
+                                BearerToken = reader.GetString(reader.GetOrdinal("username")),
                                 Username = reader.GetString(reader.GetOrdinal("username")),
                                 Password = reader.GetString(reader.GetOrdinal("password")),
-                                Name = reader.GetString(reader.GetOrdinal("name")),
-                                Bio = reader.GetString(reader.GetOrdinal("bio")),
-                                Image = reader.GetString(reader.GetOrdinal("image")),
+                                Name = reader.IsDBNull(reader.GetOrdinal("name")) ? "" : reader.GetString(reader.GetOrdinal("name")),
+                                Bio = reader.IsDBNull(reader.GetOrdinal("bio")) ? "" : reader.GetString(reader.GetOrdinal("bio")),
+                                Image = reader.IsDBNull(reader.GetOrdinal("image")) ? "" : reader.GetString(reader.GetOrdinal("image")),
                                 Elo = reader.GetInt32(reader.GetOrdinal("elo")),
                                 Wins = reader.GetInt32(reader.GetOrdinal("wins")),
                                 Looses = reader.GetInt32(reader.GetOrdinal("looses")),
@@ -240,6 +242,29 @@ namespace MTCG.src.DataAccess.Persistance
                     cmd.ExecuteNonQuery();
                 }
             }
+        }
+        public string GetToken(string username)
+        {
+            using (var connection = new NpgsqlConnection(GetConnectionString()))
+            {
+                connection.Open();
+                using (var cmd = new NpgsqlCommand("SELECT tokens.token " +
+                                          "FROM tokens " +
+                                          "JOIN users ON tokens.fk_user = users.user_id " +
+                                          "WHERE users.username = @Username", connection))
+                {
+                    cmd.Parameters.AddWithValue("@Username", username);
+                    using (NpgsqlDataReader reader = cmd.ExecuteReader())
+                    {
+                        if (reader != null && reader.Read())
+                        {
+                            var token = reader.GetString(reader.GetOrdinal("token"));
+                            return token;
+                        }
+                    }
+                }
+            }
+            return string.Empty;
         }
         public void UpdateUser(UserDTO user, string[] parameters)
         {
@@ -575,8 +600,8 @@ namespace MTCG.src.DataAccess.Persistance
                                                         "card_id UUID PRIMARY KEY, " +
                                                         "fk_user UUID REFERENCES users(user_id), " +
                                                         "type VARCHAR(255) NOT NULL CHECK (type IN ('Spell', 'Monster')), " +
-                                                        "monster VARCHAR(255) CHECK (type IN ('Kraken', 'Dragon', 'Ork', 'Elf', 'Goblin', 'Knight', 'Wizzard', 'Troll')), " +
-                                                        "element VARCHAR(255) NOT NULL CHECK (element IN ('Normal', 'Fire', 'Water')), " +
+                                                        "monster VARCHAR(255) CHECK (monster IN ('Kraken', 'Dragon', 'Ork', 'Elf', 'Goblin', 'Knight', 'Wizzard', 'Troll') OR monster IS NULL), " +
+                                                        "element VARCHAR(255) NOT NULL CHECK (element IN ('Regular', 'Fire', 'Water')), " +
                                                         "damage DECIMAL NOT NULL" +
                                                     ");", connection))
                 {
@@ -585,7 +610,7 @@ namespace MTCG.src.DataAccess.Persistance
             }
             Console.WriteLine("Database: Table cards was created successfully.");
         }
-        public void CreateTableDeckCards()
+        public void CreateTableDeckCards() // Upon creating a card, it "belongs" to the admin
         {
             using (var connection = new NpgsqlConnection(GetConnectionString()))
             {
@@ -598,8 +623,8 @@ namespace MTCG.src.DataAccess.Persistance
                                                         "deck_card_id UUID PRIMARY KEY, " +
                                                         "fk_user UUID REFERENCES users(user_id), " +
                                                         "type VARCHAR(255) NOT NULL CHECK (type IN ('Spell', 'Monster')), " +
-                                                        "monster VARCHAR(255) CHECK (type IN ('Kraken', 'Dragon', 'Ork', 'Elf', 'Goblin', 'Knight', 'Wizzard', 'Troll')), " +
-                                                        "element VARCHAR(255) NOT NULL CHECK (element IN ('Normal', 'Fire', 'Water')), " +
+                                                        "monster VARCHAR(255) CHECK (monster IN ('Kraken', 'Dragon', 'Ork', 'Elf', 'Goblin', 'Knight', 'Wizzard', 'Troll') OR monster IS NULL), " +
+                                                        "element VARCHAR(255) NOT NULL CHECK (element IN ('Regular', 'Fire', 'Water')), " +
                                                         "damage DECIMAL NOT NULL, " +
                                                         "position INT CHECK (position >= 1 AND position <= 4)" + // TODO Magic numebrs
                                                     ");", connection))
@@ -663,11 +688,33 @@ namespace MTCG.src.DataAccess.Persistance
                 CreateTableDeckCards();
                 CreateTableTradingDeals();
                 CreateTableTokens();
+
+                InsertAdmin();
+                TestValuesTableUsers();
+                TestValuesTableCards();
             }
             catch (Exception e) 
             {   
                 Console.WriteLine(e.Message);
             }
+        }
+        public void InsertAdmin()
+        {
+            using (var connection = new NpgsqlConnection(GetConnectionString()))
+            {
+                connection.Open();
+                if (connection != null && connection.State == ConnectionState.Closed)
+                {
+                    return;
+                }
+                using (var cmd = new NpgsqlCommand("INSERT INTO users(user_id, username, password) VALUES " +
+                                                        $"('{GetAdminId()}', 'aisa', 'isTheAdmin'" +
+                                                    $");", connection))
+                {
+                    cmd.ExecuteNonQuery();
+                }
+            }
+            Console.WriteLine("Database: Admin was added.");
         }
         public void DropAll()
         {
@@ -688,7 +735,7 @@ namespace MTCG.src.DataAccess.Persistance
         // /////////////////////////// Test Values ////////////////////////////
         //---------------------------------------------------------------------
         
-        /*public void FillTableUsers()
+        public void TestValuesTableUsers()
         {
             using (var connection = new NpgsqlConnection(GetConnectionString()))
             {
@@ -697,18 +744,18 @@ namespace MTCG.src.DataAccess.Persistance
                 {
                     return;
                 }
-                using (var cmd = new NpgsqlCommand("INSERT INTO users(user_id, username, password) VALUES " +
-                                                        "('', 'password1'), " +
-                                                        "('test2', 'password2'), " +
-                                                        "('test3', 'password3'" +
-                                                    ");", connection))
+                using (var cmd = new NpgsqlCommand("INSERT INTO users(user_id, username, password, name, bio, image) VALUES " +
+                                                        $"('{Guid.NewGuid()}', 'test1', 'password1', 'Juan', 'hola guacamola', NULL), " +
+                                                        $"('{Guid.NewGuid()}', 'test2', 'password2', 'Miguelito', 'tuki', ':=)'), " +
+                                                        $"('{Guid.NewGuid()}', 'test3', 'password3', 'Juan Pablo', 'hey, im using whatsapp', NULL" +
+                                                    $");", connection))
                 {
                     cmd.ExecuteNonQuery();
                 }
             }
-            Console.WriteLine("Database: Table users filled with test values.\n");
+            Console.WriteLine("Database: Table users filled with test values.");
         }
-        public void FillTableCards()
+        public void TestValuesTableCards()
         {
             using (var connection = new NpgsqlConnection(GetConnectionString()))
             {
@@ -717,13 +764,15 @@ namespace MTCG.src.DataAccess.Persistance
                 {
                     return;
                 }
-                using (var cmd = new NpgsqlCommand("INSERT INTO cards(type, element, monster, damage) VALUES " +
-                                                        "(\"Monster\", \"Water\", \"Knight\", 15), " +
-                                                        "(\"Spell\", \"Normal\", '',  13), " +
-                                                        "(\"Spell\", \"Fire\", '',  20), " +
-                                                        "(\"Monster\", \"Water\", \"Dragon\", 12), " +
-                                                        "(\"Spell\", \"Water\", '', 17), " +
-                                                        "(\"Monster\", \"Fire\", \"Knight\", 13" +
+                using (var cmd = new NpgsqlCommand("INSERT INTO cards(card_id, fk_user, type, monster, element, damage) VALUES " +
+                                                        $"('{Guid.NewGuid()}', '{GetAdminId()}', 'Spell', NULL, 'Water', '30'), " +
+                                                        $"('{Guid.NewGuid()}', '{GetAdminId()}', 'Spell', NULL, 'Fire', '15'), " +
+                                                        $"('{Guid.NewGuid()}', '{GetAdminId()}', 'Monster', 'Kraken', 'Water', '70'), " +
+                                                        $"('{Guid.NewGuid()}', '{GetAdminId()}', 'Spell', NULL, 'Water', '15'), " +
+                                                        $"('{Guid.NewGuid()}', '{GetAdminId()}', 'Monster', 'Ork', 'Fire', '45'), " +
+                                                        $"('{Guid.NewGuid()}', '{GetAdminId()}', 'Spell', NULL, 'Regular', '40'), " +
+                                                        $"('{Guid.NewGuid()}', '{GetAdminId()}', 'Monster', 'Elf', 'Regular', '35'), " +
+                                                        $"('{Guid.NewGuid()}', '{GetAdminId()}', 'Monster', 'Knight', 'Fire', '25'" +
                                                     ");", connection))
                 {
                     cmd.ExecuteNonQuery();
@@ -731,26 +780,9 @@ namespace MTCG.src.DataAccess.Persistance
             }
             Console.WriteLine("Database: Table cards filled with test values.\n");
         }
-        public void FillTablePackages()
-        {
-            using (var connection = new NpgsqlConnection(GetConnectionString()))
-            {
-                connection.Open();
-                if (connection != null && connection.State == ConnectionState.Closed)
-                {
-                    return;
-                }
-                using (var cmd = new NpgsqlCommand("INSERT INTO packages(fk_card1, fk_card2, fk_card3, fk_card4, fk_card5) VALUES " +
-                                                        "(1, 2, 3, 4, 5" +
-                                                    ");", connection))
-                {
-                    cmd.ExecuteNonQuery();
-                }
-            }
-            Console.WriteLine("Database: Table packages filled with test values.\n");
-        }*/
 
         //---------------------------------------------------------------------
+
         private void SetSearchPath()
         {
             using (var connection = new NpgsqlConnection(GetConnectionString()))
@@ -777,6 +809,22 @@ namespace MTCG.src.DataAccess.Persistance
             catch (Exception ex) {
                 Console.WriteLine(ex.Message);
                 return null;
+            }
+        }
+        private Guid GetAdminId()
+        {
+            try
+            {
+                IConfiguration configuration = new ConfigurationBuilder()
+                .AddUserSecrets("c6fa29a4-4f91-480b-8eae-dcee24e8d186")
+                .Build();
+
+                return Guid.Parse(configuration["AdminId"]);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                return Guid.Empty;
             }
         }
     }

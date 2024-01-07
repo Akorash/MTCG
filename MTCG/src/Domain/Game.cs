@@ -40,7 +40,6 @@ namespace MTCG.src.Domain
     /// </summary>
     internal class Game
     {
-        private readonly string TITLE = "Monster Trading Card Game";
         private readonly int DECK_LENGTH = 5;
         private readonly int MAX_ROUNDS = 100;
 
@@ -57,6 +56,9 @@ namespace MTCG.src.Domain
         }
         public void Play(User player1, User player2)
         {
+            var deck1 = _player1.Deck;
+            var deck2 = _player2.Deck;
+
             int cnt = 0;
             while (!_gameFinished && cnt < MAX_ROUNDS)
             {
@@ -78,6 +80,7 @@ namespace MTCG.src.Domain
                 }
                 cnt++;
             }
+            
         }
         private Card ChooseRandom(List<Card> deck)
         {
@@ -91,6 +94,12 @@ namespace MTCG.src.Domain
         {
             looser.RemoveFromDeck(card);
             winner.AddToDeck(card);
+        }
+        private void ResetDecks(User user1, User user2, List<Card> deck1, List<Card> deck2)
+        {
+            user1.SetDeck(deck1);
+            user2.SetDeck(deck2);
+
         }
     }
 }

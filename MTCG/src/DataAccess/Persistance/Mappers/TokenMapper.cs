@@ -13,11 +13,19 @@ namespace MTCG.src.DataAccess.Persistance.Mappers
         public TokenMapper() { }
         public BearerToken Map(BearerTokenDTO tokenDTO)
         {
+            if (tokenDTO == null)
+            {
+                return null;
+            }
             return new BearerToken(tokenDTO.Id, tokenDTO.User, tokenDTO.Token, tokenDTO.Timestamp);
         }
 
         public BearerTokenDTO Map(BearerToken token)
         {
+            if (token == null)
+            {
+                return null;
+            }
             return new BearerTokenDTO()
             {
                 Id = token.Id,

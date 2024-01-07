@@ -119,3 +119,8 @@ C:\Users\aisae\source\repos\MTCG\TestMTCG\obj\Debug\net7.0\refint\TestMTCG.dll
 C:\Users\aisae\source\repos\MTCG\TestMTCG\obj\Debug\net7.0\TestMTCG.pdb
 C:\Users\aisae\source\repos\MTCG\TestMTCG\obj\Debug\net7.0\TestMTCG.genruntimeconfig.cache
 C:\Users\aisae\source\repos\MTCG\TestMTCG\obj\Debug\net7.0\ref\TestMTCG.dll
+C:\Users\aisae\source\repos\MTCG\TestMTCG\bin\Debug\net7.0\Microsoft.IdentityModel.Abstractions.dll
+C:\Users\aisae\source\repos\MTCG\TestMTCG\bin\Debug\net7.0\Microsoft.IdentityModel.JsonWebTokens.dll
+C:\Users\aisae\source\repos\MTCG\TestMTCG\bin\Debug\net7.0\Microsoft.IdentityModel.Logging.dll
+C:\Users\aisae\source\repos\MTCG\TestMTCG\bin\Debug\net7.0\Microsoft.IdentityModel.Tokens.dll
+C:\Users\aisae\source\repos\MTCG\TestMTCG\bin\Debug\net7.0\System.IdentityModel.Tokens.Jwt.dll

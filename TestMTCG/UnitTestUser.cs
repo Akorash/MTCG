@@ -9,31 +9,16 @@ using MTCG.src.Domain.Entities;
 
 namespace TestMTCG
 {
-    internal class UnitTestUser
+    [TestClass]
+    public class UnitTestUser
     {
-        [TestMethod]
-        public void TestSignUpUsernameTaken()
-        {
-            var user = new User(null, "test1", "password1");
-            user.Register();
-            // Check response to username taken
-            // Check response to user created successfully 
-        }
         [TestMethod]
         public void TestUserLogIn()
         {
-        }
-        [TestMethod]
-        public void TestUserShowCards()
-        {
-        }
-        [TestMethod]
-        public void TestUserConfigureDeck()
-        {
-        }
-        [TestMethod]
-        public void TestUserShowDeck()
-        {
+            var user = new User(null, "teEEESSttt", "password1", null, null, null, 20);
+            string response = user.LogIn();
+
+            Assert.AreEqual(response, null);
         }
     }
 }

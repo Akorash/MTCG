@@ -14,11 +14,19 @@ namespace MTCG.src.DataAccess.Persistance.Mappers
         public TradeMapper() { }
         public TradingDeal Map(TradingDealDTO tradeDTO)
         {
+            if (tradeDTO == null)
+            {
+                return null;
+            }
             return new TradingDeal(tradeDTO.Id, tradeDTO.Card, tradeDTO.User, tradeDTO.Type, tradeDTO.MinimumDamage);
         }
 
         public TradingDealDTO Map(TradingDeal trade)
         {
+            if (trade == null)
+            {
+                return null;
+            }
             return new TradingDealDTO()
             {
                 Id = trade.Id,
