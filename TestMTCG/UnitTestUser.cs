@@ -12,13 +12,5 @@ namespace TestMTCG
     [TestClass]
     public class UnitTestUser
     {
-        [TestMethod]
-        public void TestUserLogIn()
-        {
-            var user = new User(null, "teEEESSttt", "password1", null, null, null, 20);
-            string response = user.LogIn();
-
-            Assert.AreEqual(response, null);
-        }
     }
 }

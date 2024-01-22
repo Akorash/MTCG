@@ -1,4 +1,5 @@
-﻿using MTCG.src.DataAccess.Persistance;
+﻿using Microsoft.Extensions.Configuration;
+using MTCG.src.DataAccess.Persistance;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
@@ -68,8 +69,11 @@ namespace MTCG.src.Domain.Entities
         public Card(Guid id, Guid? user, string name, string element, string type, string? monster, int damage)
         {
             Id = id;
-            User = user; 
-            Name = name;
+            User = user;
+            if (user == Guid.Empty || user == null)
+            {
+                user = SecretsManager.GetAdminId();
+            }
             Element = element;
             if (!type.Equals(CardType.Monster.ToString()) && !type.Equals(CardType.Spell.ToString())) 
             {
@@ -77,9 +81,14 @@ namespace MTCG.src.Domain.Entities
             }
             Type = type;
             Monster = monster;
-            if (damage <= MIN_DAMAGE || damage > MAX_DAMAGE) 
+            if (damage <= MIN_DAMAGE || damage >= MAX_DAMAGE) 
             {
                 throw new ArgumentException("Could not construct Card: Invalid Damage");
+            }
+            Name = name;
+            if (name == string.Empty || name == null)
+            {
+                name = Type + Monster;
             }
             Damage = damage;
         }

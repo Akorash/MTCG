@@ -151,6 +151,7 @@ namespace MTCG.src.Domain.Entities
             {
                 foreach (var card in package)
                 {
+                    Console.WriteLine(card.User);
                     u.Cards.Add(card);
                 }
                 return package;
@@ -169,20 +170,15 @@ namespace MTCG.src.Domain.Entities
             { 
                 throw new Exception("Falied to get package."); 
             }
-            Console.WriteLine("Gave the user the package just fine");
 
             PayForPackage();
-            Console.WriteLine("Bought the package just fine");
 
             // If this is the first time buying a package, set it as the user's deck
             using (var u = new UnitOfWork())
             {
                 var deck = u.Cards.GetDeck(Id).ToList();
-                Console.WriteLine($"{deck.Count} cards in deck");
-
                 if (u.Cards.GetDeck(Id).ToList() == null || u.Cards.GetUserCards(Id).ToList() == null) 
                 {
-                    Console.WriteLine("About to transfer cards to deck");
                     TransferFromStackToDeck(GetCardIds(package));
                 }
             }
@@ -196,7 +192,6 @@ namespace MTCG.src.Domain.Entities
             {
                 throw new Exception("No cards");
             }
-            Console.WriteLine($"Cards: {cards.Count}"); 
             return cards;
         }
         public List<Card> ShowDeck()
@@ -221,12 +216,12 @@ namespace MTCG.src.Domain.Entities
             TransferFromDeckToStack();
             return TransferFromStackToDeck(card_ids);
         }
-        public void RequestTradingDeal() // Unfinished
+        public void RequestTradingDeal(string typeRequirement, int minumumDamage) // Unfinished
         {
             // Must not be in deck
+            var cards = GetCardsFromStack();
+
             // Locked for further usage
-            // Add requirement: spell or monster 
-            // Additionaly Type requirement or Minimum Damage
         }
         public List<TradingDeal> ShowTradingDeals()
         {
@@ -468,23 +463,7 @@ namespace MTCG.src.Domain.Entities
         }
         private bool IsAdmin(Guid id)
         {
-            return (id == GetAdminId());
-        }
-        private Guid GetAdminId()
-        {
-            try
-            {
-                IConfiguration configuration = new ConfigurationBuilder()
-                .AddUserSecrets("c6fa29a4-4f91-480b-8eae-dcee24e8d186")
-                .Build();
-
-                return Guid.Parse(configuration["AdminId"]);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex.Message);
-                return Guid.Empty;
-            }
+            return (id == SecretsManager.GetAdminId());
         }
 
         //---------------------------------------------------------------------

@@ -365,11 +365,11 @@ namespace MTCG.src.DataAccess.Persistance
             using (var connection = new NpgsqlConnection(GetConnectionString()))
             {
                 connection.Open();
-                using (NpgsqlCommand cmd = new("INSERT INTO cards (card_id, fk_user, name, type, monster, element, damage) VALUES (@Id, @User, @Name, @Type, @Monster, @Element, @Damage)", connection))
+                using (NpgsqlCommand cmd = new("INSERT INTO cards (card_id, fk_user, type, monster, element, damage) VALUES (@Id, @User, @Type, @Monster, @Element, @Damage)", connection))
                 {
                     cmd.Parameters.AddWithValue("@Id", card.Id);
-                    cmd.Parameters.AddWithValue("@User", card.User ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@Name", card.Name);
+                    cmd.Parameters.AddWithValue("@User", card.User != null && card.User != Guid.Empty ? card.User : GetAdminId());
+                    // cmd.Parameters.AddWithValue("@Name", card.Name);
                     cmd.Parameters.AddWithValue("@Type", card.Type);
                     cmd.Parameters.AddWithValue("@Monster", card.Monster ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@Element", card.Element);
@@ -383,11 +383,11 @@ namespace MTCG.src.DataAccess.Persistance
             using (var connection = new NpgsqlConnection(GetConnectionString()))
             {
                 connection.Open();
-                using (NpgsqlCommand cmd = new("INSERT INTO deck_cards (card_id, fk_user, name, type, monster, element, damage) VALUES (@Id, @User, @Name, @Type, @Monster, @Element, @Damage)", connection))
+                using (NpgsqlCommand cmd = new("INSERT INTO deck_cards (card_id, fk_user, type, monster, element, damage) VALUES (@Id, @User, @Type, @Monster, @Element, @Damage)", connection))
                 {
                     cmd.Parameters.AddWithValue("@Id", card.Id);
-                    cmd.Parameters.AddWithValue("@User", card.User ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@Name", card.Name);
+                    cmd.Parameters.AddWithValue("@User", card.User != null && card.User != Guid.Empty ? card.User : GetAdminId());
+                    // cmd.Parameters.AddWithValue("@Name", card.Name);
                     cmd.Parameters.AddWithValue("@Type", card.Type);
                     cmd.Parameters.AddWithValue("@Monster", card.Monster ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@Element", card.Element);

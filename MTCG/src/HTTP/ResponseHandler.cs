@@ -25,15 +25,10 @@ namespace MTCG.src.HTTP
         private HttpStatusCode _status;
         private Mapper _mapper;
 
-        private BattleQueue _battleQueue;
-        private readonly object _battleLock;
-
-        public ResponseHandler(object battleLock, BattleQueue battleQueue) 
+        public ResponseHandler() 
         {
             _status = default;
             _mapper = new();
-            _battleLock = battleLock;
-            _battleQueue = battleQueue;
         }
 
         //---------------------------------------------------------------------

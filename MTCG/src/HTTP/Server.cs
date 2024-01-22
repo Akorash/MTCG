@@ -17,16 +17,11 @@ namespace MTCG.src.HTTP
         private readonly int _port;
         private readonly int _maxConn;
         private readonly ResponseHandler _rh; // Manages requests and sends the corresponding response
-        private BattleQueue _battleQueue;
-        private readonly object _queueLock;
         public Server(int port, int maxConnections)
         {
             _port = port;
             _maxConn = maxConnections;
-
-            _battleQueue = new BattleQueue();
-            _queueLock = new object();
-            _rh = new ResponseHandler(_queueLock, _battleQueue);
+            _rh = new ResponseHandler();
         }
 
         public async Task StartAsync()
@@ -35,8 +30,6 @@ namespace MTCG.src.HTTP
             {
                 var serverSocket = InitSocket(); // Bind and Listen
                 Console.WriteLine($"Server is listening on port {_port} with a maximum of {_maxConn} connections...");
-
-                var battleQueue = new BattleQueue(); // For Matchmaking further on
 
                 while (true) // Listen and Accept --> Start new Task for each new client
                 {

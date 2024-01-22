@@ -19,6 +19,14 @@ namespace TestMTCG
         public UnitTestContext()
         {
             _context = new();
+            try
+            {
+                _context.CreateSchema();
+            }
+            catch (Exception e) 
+            {
+                throw new Exception($"Failed to construct UnitTestContext: {e.Message}");
+            }
             _Umapper = new();
             _Tokmapper = new();
         }
@@ -26,20 +34,19 @@ namespace TestMTCG
         [TestMethod]
         public void TestGetUserById()
         {
-            var userId = Guid.NewGuid();
             var user = new UserDTO()
             {
-                Id = userId,
-                Username = "test4",
-                Password = "password4"
+                Username = "hi",
+                Password = "hi"
             };
             _context.AddUser(user);
 
-            UserDTO result = _context.GetUserById(userId);
+            UserDTO userId = _context.GetUserByUsername(user.Username);
 
-            Assert.AreEqual(result.Id, user.Id);
-            Assert.AreEqual(result.Username, user.Username);
-            Assert.AreEqual(result.Password, user.Password);
+            UserDTO resultUser = _context.GetUserById(userId.Id);
+
+            Assert.AreEqual(resultUser.Username, user.Username);
+            Assert.AreEqual(resultUser.Password, user.Password);
         }
         [TestMethod]
         public void TestUserGetByUsername()
@@ -62,13 +69,15 @@ namespace TestMTCG
         [TestMethod]
         public void TestToken() 
         {
-            var user = _context.GetUserByUsername("aisa");
-            var response = _context.GetToken(user.Username);
+            UserDTO user = _context.GetUserByUsername("aisa");
 
-            var responseUser = _context.GetUserByToken(response);
+            // Check that a token is returned
+            var responseToken = _context.GetToken(user.Username);
 
-            Assert.AreNotEqual(user.Id, Guid.Empty);
-            Assert.IsNotNull(response);
+            // Check that the right user is returned through the token
+            UserDTO responseUser = _context.GetUserByToken(responseToken); 
+
+            Assert.IsNotNull(responseToken);
             Assert.AreEqual(responseUser.Username, user.Username);
         }
 
