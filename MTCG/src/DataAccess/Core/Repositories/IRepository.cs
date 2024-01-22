@@ -11,9 +11,7 @@ namespace MTCG.src.DataAccess.Core.Repositories
     {
         public T Get(Guid id);
         public IEnumerable<T> GetAll();
-
         public void Add(T model);
-
         public void Delete(Guid id);
     }
 }

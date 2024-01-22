@@ -368,15 +368,19 @@ namespace MTCG.src.HTTP
                 if (bearerToken == null)
                 {
                     throw new ArgumentNullException();
+                    Console.WriteLine($"Argument null execption");
                 }
-                if (bearerToken == null)
-                {
-                    throw new ArgumentNullException();
-                }
-                var user = new User(bearerToken.Token);
 
-                body = user.ShowCards();
-                _status = HttpStatusCode.OK;
+                var user = new User(bearerToken.Token);
+                if (user == null)
+                {
+                    _status = HttpStatusCode.Unauthorized;
+                }
+                else 
+                {
+                    body = user.ShowCards();
+                    _status = HttpStatusCode.OK;
+                }
             }
             catch (Exception e)
             {
@@ -384,7 +388,7 @@ namespace MTCG.src.HTTP
                 {
                     _status = HttpStatusCode.NoContent;
                 }
-                _status = HttpStatusCode.Unauthorized;
+                _status = HttpStatusCode.NotFound;
                 Console.WriteLine($"Failed to retrieve cards: {e.Message}");
             }
 

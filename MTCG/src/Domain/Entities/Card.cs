@@ -13,8 +13,8 @@ namespace MTCG.src.Domain.Entities
         public static readonly int MIN_DAMAGE = 5;
         public static readonly int MAX_DAMAGE = 100;
         public static readonly int PACK_PRICE = 5;
+        public static readonly int CARDS_IN_PACKAGE = 5;
         private static readonly int DAMAGE_INCREMENTS = 5;
-        private static readonly int CARDS_IN_PACKAGE = 4;
         public enum ElementType
         {
             Fire = 1,

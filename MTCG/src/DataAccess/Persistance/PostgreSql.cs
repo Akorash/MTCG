@@ -39,11 +39,13 @@ namespace MTCG.src.DataAccess.Persistance
             {
                 connection.Open();
 
-                if (connection != null && connection.State == ConnectionState.Closed) {
+                if (connection != null && connection.State == ConnectionState.Closed) 
+                {
                     return null;
                 }
                 // ConnectionState can also have other values (ex. Broken, Connecting...)
-                else if (connection.State == ConnectionState.Open) {
+                else if (connection.State == ConnectionState.Open) 
+                {
                     using (var cmd = new NpgsqlCommand("SELECT * FROM users WHERE user_id = @Id;", connection))
                     {
                         cmd.Parameters.AddWithValue("@Id", id);
@@ -366,16 +368,35 @@ namespace MTCG.src.DataAccess.Persistance
                 using (NpgsqlCommand cmd = new("INSERT INTO cards (card_id, fk_user, name, type, monster, element, damage) VALUES (@Id, @User, @Name, @Type, @Monster, @Element, @Damage)", connection))
                 {
                     cmd.Parameters.AddWithValue("@Id", card.Id);
-                    cmd.Parameters.AddWithValue("@User", card.User);
+                    cmd.Parameters.AddWithValue("@User", card.User ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@Name", card.Name);
                     cmd.Parameters.AddWithValue("@Type", card.Type);
-                    cmd.Parameters.AddWithValue("@Monster", card.Monster);
+                    cmd.Parameters.AddWithValue("@Monster", card.Monster ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@Element", card.Element);
                     cmd.Parameters.AddWithValue("@Damage", card.Damage);
                     cmd.ExecuteNonQuery();
                 }
             }
         }
+        public void AddDeckCard(CardDTO card)
+        {
+            using (var connection = new NpgsqlConnection(GetConnectionString()))
+            {
+                connection.Open();
+                using (NpgsqlCommand cmd = new("INSERT INTO deck_cards (card_id, fk_user, name, type, monster, element, damage) VALUES (@Id, @User, @Name, @Type, @Monster, @Element, @Damage)", connection))
+                {
+                    cmd.Parameters.AddWithValue("@Id", card.Id);
+                    cmd.Parameters.AddWithValue("@User", card.User ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@Name", card.Name);
+                    cmd.Parameters.AddWithValue("@Type", card.Type);
+                    cmd.Parameters.AddWithValue("@Monster", card.Monster ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@Element", card.Element);
+                    cmd.Parameters.AddWithValue("@Damage", card.Damage);
+                    cmd.ExecuteNonQuery();
+                }
+            }
+        }
+
         public void DeleteCard(Guid id)
         {
             using (var connection = new NpgsqlConnection(GetConnectionString()))
@@ -393,11 +414,11 @@ namespace MTCG.src.DataAccess.Persistance
             using (var connection = new NpgsqlConnection(GetConnectionString()))
             {
                 connection.Open();
-                using (var cmd = new NpgsqlCommand($"SELECT * FROM cards WHERE fk_user = '{GetAdminId()}' LIMIT 5;", connection))
+                using (var cmd = new NpgsqlCommand($"SELECT * FROM cards WHERE fk_user = '{GetAdminId()}' LIMIT {Card.CARDS_IN_PACKAGE};", connection))
                 {
                     using (var reader = cmd.ExecuteReader())
                     {
-                        if (reader != null && reader.Read())
+                        if (reader != null)
                         {
                             var packet = new List<CardDTO>();
                             while (reader.Read())
@@ -414,7 +435,41 @@ namespace MTCG.src.DataAccess.Persistance
                                 };
                                 packet.Add(card);
                             }
+                            Console.WriteLine(packet.Count);
                             return packet;
+                        }
+                    }
+                }
+            }
+            return null;
+        }
+        public List<CardDTO> GetUserCards(Guid user_id)
+        {
+            using (var connection = new NpgsqlConnection(GetConnectionString()))
+            {
+                connection.Open();
+                using (var cmd = new NpgsqlCommand("SELECT * FROM cards WHERE fk_user = @Id;", connection))
+                {
+                    cmd.Parameters.AddWithValue("@Id", user_id);
+                    using (var reader = cmd.ExecuteReader())
+                    {
+                        if (reader != null)
+                        {
+                            var allCards = new List<CardDTO>();
+                            while (reader.Read())
+                            {
+                                var card = new CardDTO
+                                {
+                                    Id = reader.GetGuid(reader.GetOrdinal("card_id")),
+                                    User = reader.GetGuid(reader.GetOrdinal("fk_user")),
+                                    Type = reader.GetString(reader.GetOrdinal("type")),
+                                    Monster = reader.IsDBNull(reader.GetOrdinal("monster")) ? "" : reader.GetString(reader.GetOrdinal("monster")),
+                                    Element = reader.GetString(reader.GetOrdinal("element")),
+                                    Damage = reader.GetInt32(reader.GetOrdinal("damage")),
+                                };
+                                allCards.Add(card);
+                            }
+                            return allCards;
                         }
                         return null;
                     }
@@ -426,12 +481,12 @@ namespace MTCG.src.DataAccess.Persistance
             using (var connection = new NpgsqlConnection(GetConnectionString()))
             {
                 connection.Open();
-                using (var cmd = new NpgsqlCommand("SELECT * FROM deck_cards WHERE user_id = @Id;", connection))
+                using (var cmd = new NpgsqlCommand("SELECT * FROM deck_cards WHERE fk_user = @Id;", connection))
                 {
                     cmd.Parameters.AddWithValue("@Id", user_id);
                     using (var reader = cmd.ExecuteReader())
                     {
-                        if (reader != null && reader.Read())
+                        if (reader != null)
                         {
                             var allCards = new List<CardDTO>();
                             while (reader.Read())
@@ -439,8 +494,7 @@ namespace MTCG.src.DataAccess.Persistance
                                 var card = new CardDTO
                                 {
                                     Id = reader.GetGuid(reader.GetOrdinal("card_id")),
-                                    User = reader.GetGuid(reader.GetOrdinal("user")),
-                                    Name = reader.GetString(reader.GetOrdinal("name")),
+                                    User = reader.GetGuid(reader.GetOrdinal("fk_user")),
                                     Type = reader.GetString(reader.GetOrdinal("type")),
                                     Monster = reader.IsDBNull(reader.GetOrdinal("monster")) ? "" : reader.GetString(reader.GetOrdinal("monster")),
                                     Element = reader.GetString(reader.GetOrdinal("element")),
@@ -457,7 +511,6 @@ namespace MTCG.src.DataAccess.Persistance
         }
         public void UpdateUserInCard(Guid card_id, Guid user_id)
         {
-            Console.WriteLine("update user in card");
             using (var connection = new NpgsqlConnection(GetConnectionString()))
             {
                 connection.Open();
@@ -467,6 +520,7 @@ namespace MTCG.src.DataAccess.Persistance
                     cmd.Parameters.AddWithValue("@UserId", user_id);
                     cmd.ExecuteNonQuery();
                 }
+                connection.Close();
             }
         }
         //---------------------------------------------------------------------

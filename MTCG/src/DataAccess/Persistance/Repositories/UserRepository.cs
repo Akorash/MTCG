@@ -33,9 +33,9 @@ namespace MTCG.src.DataAccess.Persistance.Repositories
             IEnumerable<UserDTO> dtos = Context.GetAllUsers();
             return dtos.Select(dto => Mapper.Map(dto));
         }
-        public void Add(User entity)
+        public void Add(User user)
         {
-            var dto = Mapper.Map(entity);
+            var dto = Mapper.Map(user);
             Context.AddUser(dto);
         }
         public void Delete(Guid id)

@@ -32,21 +32,14 @@ namespace MTCG.src.DataAccess.Persistance.Repositories
             IEnumerable<CardDTO> dtos = DbManager.GetAllCards();
             return dtos.Select(dto => Mapper.Map(dto));
         }
-        public void Add(Card entity)
-        {
-            CardDTO dto = Mapper.Map(entity);
-            DbManager.AddCard(dto);
-        }
-        public void Delete(Guid id)
-        {
-            if (id != Guid.Empty) 
-            {
-                DbManager.DeleteCard(id);
-            }
-        }
         public IEnumerable<Card> GetPackage()
         {
             IEnumerable<CardDTO> dtos = DbManager.GetPackage();
+            return dtos.Select(dto => Mapper.Map(dto));
+        }
+        public IEnumerable<Card> GetUserCards(Guid user_id)
+        {
+            IEnumerable<CardDTO> dtos = DbManager.GetUserCards(user_id);
             return dtos.Select(dto => Mapper.Map(dto));
         }
         public IEnumerable<Card> GetDeck(Guid user_id)
@@ -54,8 +47,38 @@ namespace MTCG.src.DataAccess.Persistance.Repositories
             IEnumerable<CardDTO> dtos = DbManager.GetDeck(user_id);
             return dtos.Select(dto => Mapper.Map(dto));
         }
+        public void Add(Card card)
+        {
+            CardDTO dto = Mapper.Map(card);
+            DbManager.AddCard(dto);
+        }
+        public void AddToDeck(Card card)
+        {
+            CardDTO dto = Mapper.Map(card);
+            DbManager.AddDeckCard(dto);
+        }
+        public void Delete(Guid id)
+        {
+            if (id != Guid.Empty)
+            {
+                throw new ArgumentException("Card id is empty.");
+            }
+            DbManager.DeleteCard(id);
+        }
+        public void DeleteFromDeck(Guid id)
+        {
+            if (id != Guid.Empty)
+            {
+                throw new ArgumentException("Card id is empty.");
+            }
+            DbManager.DeleteCard(id);
+        }
         public void UpdateUser(Guid id, Guid user_id)
         {
+            if (id == Guid.Empty || user_id == Guid.Empty)
+            {
+                throw new ArgumentException("Card id or User id is empty.");
+            }
             DbManager.UpdateUserInCard(id, user_id);
         }
     }

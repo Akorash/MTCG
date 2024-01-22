@@ -8,6 +8,7 @@ using System.Security.Cryptography;
 using System.Xml.Linq;
 using Microsoft.Extensions.Configuration;
 using MTCG.src.DataAccess.Persistance.DTOs;
+using MTCG.src.DataAccess.Core;
 
 namespace MTCG.src.Domain.Entities
 {
@@ -135,20 +136,22 @@ namespace MTCG.src.Domain.Entities
         //------------------------------ Cards --------------------------------
         public List<Card> CreatePackage(Guid id)
         {
-            if (!IsAdmin(id))
-            {
-                throw new HttpRequestException("Not Admin");
+            if (!IsAdmin(id)) 
+            { 
+                throw new HttpRequestException("Not Admin."); 
             }
+
             var package = Card.GeneratePackage();
-            if (package == null)
-            {
-                throw new Exception("Failed to generate package");
+            if (package == null) 
+            { 
+                throw new Exception("Failed to generate package."); 
             }
-            using (var unitOfWork = new UnitOfWork())
+
+            using (var u = new UnitOfWork())
             {
                 foreach (var card in package)
                 {
-                    unitOfWork.Cards.Add(card);
+                    u.Cards.Add(card);
                 }
                 return package;
             }
@@ -156,44 +159,52 @@ namespace MTCG.src.Domain.Entities
         public List<Card> BuyPackage()
         {
             Console.WriteLine(Coins);
-            if (!SufficientCoins())
-            {
-                throw new InvalidOperationException("Insufficient Coins");
+            if (!SufficientCoins()) 
+            { 
+                throw new InvalidOperationException("Insufficient coins."); 
             }
-            var package = new List<Card>();
-            using (var unitOfWork = new UnitOfWork())
+
+            var package = GetPackage();
+            if (package == null) 
+            { 
+                throw new Exception("Falied to get package."); 
+            }
+            Console.WriteLine("Gave the user the package just fine");
+
+            PayForPackage();
+            Console.WriteLine("Bought the package just fine");
+
+            // If this is the first time buying a package, set it as the user's deck
+            using (var u = new UnitOfWork())
             {
-                package = unitOfWork.Cards.GetPackage().ToList(); // GetPackage() returns IEnumerable<Card>, hence the .ToList()
-                if (package == null)
+                var deck = u.Cards.GetDeck(Id).ToList();
+                Console.WriteLine($"{deck.Count} cards in deck");
+
+                if (u.Cards.GetDeck(Id).ToList() == null || u.Cards.GetUserCards(Id).ToList() == null) 
                 {
-                    throw new Exception("No card package available for buying");
+                    Console.WriteLine("About to transfer cards to deck");
+                    TransferFromStackToDeck(GetCardIds(package));
                 }
-                foreach (var card in package)
-                {
-                    unitOfWork.Cards.UpdateUser(card.Id, Id);
-                }
-                Coins -= Card.PACK_PRICE;
-                unitOfWork.Users.Update(this);
             }
             return package;
         }
         public List<Card> ShowCards()
         {
-            using (var unitOfWork = new UnitOfWork())
+            var cards = GetCardsFromStack();
+            cards = cards.Concat(GetCardsFromDeck()).ToList();
+            if (cards == null)
             {
-                var cards = (List<Card>)unitOfWork.Cards.GetAll();
-                if (cards == null)
-                {
-                    throw new Exception("No cards");
-                }
-                return cards;
+                throw new Exception("No cards");
             }
+            Console.WriteLine($"Cards: {cards.Count}"); 
+            return cards;
         }
         public List<Card> ShowDeck()
         {
+            var cards = new List<Card>();
             using (var unitOfWork = new UnitOfWork())
             {
-                var cards = (List<Card>)unitOfWork.Cards.GetDeck(Id);
+                cards = unitOfWork.Cards.GetDeck(Id).ToList();
                 if (cards == null)
                 {
                     throw new Exception("No cards");
@@ -201,23 +212,14 @@ namespace MTCG.src.Domain.Entities
                 return cards;
             }
         }
-        public List<Card> ConfigureDeck(List<Guid> card_ids) // Unfinished
+        public List<Card> ConfigureDeck(List<Guid> card_ids)
         {
             if (card_ids == null)
             {
                 throw new ArgumentNullException();
             }
-            using (var unitOfWork = new UnitOfWork())
-            {
-                // unitOfWork.Users.UpdateDeck // TODO: Create UpdateDeck statement and add to UserRepository
-                // var result = unitOfWork.Users.GetDeck(Id);
-                // if (result == null)
-                // {
-                //     throw new Exception("Failed to reconfigure deck");
-                // }
-                // return result;
-            }
-            return new List<Card>();
+            TransferFromDeckToStack();
+            return TransferFromStackToDeck(card_ids);
         }
         public void RequestTradingDeal() // Unfinished
         {
@@ -334,6 +336,119 @@ namespace MTCG.src.Domain.Entities
 
         //---------------------------------------------------------------------
         //------------------------- Helper Methods ----------------------------
+
+        private List<Guid> GetCardIds(List<Card> cards)
+        {
+            var card_ids = new List<Guid>();
+            foreach (var card in cards)
+            {
+                card_ids.Add(card.Id);
+            }
+            return card_ids;
+        }
+        private List<Card> GetPackage()
+        {
+            var package = new List<Card>();
+            using (var u = new UnitOfWork())
+            {
+                package = u.Cards.GetPackage().ToList();
+                if (package == null || package.Count < Card.CARDS_IN_PACKAGE)
+                {
+                    throw new Exception("No card package available for buying");
+                }
+                foreach (var card in package)
+                {
+                    Console.WriteLine(card.Id); // Update the owner of the cards
+                }
+                foreach (var card in package)
+                {
+                    u.Cards.UpdateUser(card.Id, Id); // Update the owner of the cards
+                }
+            }
+            return package;
+        }
+        private void PayForPackage()
+        {
+            using (var unitOfWork = new UnitOfWork())
+            {
+                Coins -= Card.PACK_PRICE;
+                unitOfWork.Users.Update(this);
+            }
+        }
+        private List<Card> GetCardsFromStack()
+        {
+            var cards = new List<Card>();
+            using (var unitOfWork = new UnitOfWork())
+            {
+                cards = unitOfWork.Cards.GetUserCards(Id).ToList();
+                if (cards == null)
+                {
+                    throw new Exception("No cards");
+                }
+                return cards;
+            }
+        }
+        private List<Card> GetCardsFromDeck()
+        {
+            var deck = new List<Card>();
+            using (var unitOfWork = new UnitOfWork())
+            {
+                deck = unitOfWork.Cards.GetDeck(Id).ToList();
+                if (deck == null)
+                {
+                    throw new Exception("No cards");
+                }
+                return deck;
+            }
+        }
+        public void TransferFromDeckToStack()
+        {
+            using (var unitOfWork = new UnitOfWork())
+            {
+                var oldDeck = unitOfWork.Cards.GetDeck(Id).ToList();
+                if (oldDeck != null)
+                {
+                    foreach (var card in oldDeck)
+                    {
+                        // Add the card to the stack
+                        unitOfWork.Cards.Add(card);
+                        // Remove from the deck
+                        unitOfWork.Cards.DeleteFromDeck(card.Id); 
+                    }
+                }
+            }
+        }
+        public List<Card> TransferFromStackToDeck(List<Guid> card_ids)
+        {
+            {
+                if (card_ids == null)
+                {
+                    throw new ArgumentNullException();
+                }
+
+                var newDeck = new List<Card>();
+                using (var unitOfWork = new UnitOfWork())
+                {
+                    // Transfer chosen cards from stack to deck
+                    foreach (var card_id in card_ids)
+                    {
+                        var card = unitOfWork.Cards.Get(card_id); // Add the card to the deck
+                        unitOfWork.Cards.AddToDeck(card);
+                        Console.WriteLine("Added to Deck");
+                        newDeck.Add(unitOfWork.Cards.Get(card_id)); // Save card in new deck list (to return to the user in the response)
+                        Console.WriteLine("Got Card");
+                        unitOfWork.Cards.Delete(card_id); // Remove from stack
+                        Console.WriteLine("Removed from stack");
+                    }
+                }
+
+                if (newDeck == null)
+                {
+                    throw new Exception("Failed to reconfigure deck");
+                }
+                return newDeck;
+            }
+        }
         public void AddToDeck(Card card)
         {
             Deck.Add(card);
