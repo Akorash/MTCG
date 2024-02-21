@@ -32,6 +32,7 @@ namespace MTCG.src.Domain.Entities
         
         public List<Card> Deck { get; private set; }
 
+        // This constructor retrieves all user data from the db and sets the user attributes
         public User(string bearerToken) // Checks if the token is valid
         {
             if (bearerToken == null || bearerToken == string.Empty )
@@ -40,10 +41,10 @@ namespace MTCG.src.Domain.Entities
             }
             try
             {
-                using (var unitOfWork = new UnitOfWork())
+                using (var u = new UnitOfWork())
                 {
                     // TODO: Check if expired --> Add _context.GetToken to user repository 
-                    var user = unitOfWork.Users.GetByToken(bearerToken);
+                    var user = u.Users.GetByToken(bearerToken);
                     if (user == null)
                     {
                         throw new ArgumentException("Invalid Token");
@@ -63,24 +64,14 @@ namespace MTCG.src.Domain.Entities
                 throw e;
             }
         }
-        public User(Guid id, string token, string username, string password, string name, string bio, string image, int coins)
-        {
-            Id = id;
-            BearerToken = token;
-            Username = username;
-            Password = password;
-            Name = name;
-            Bio = password;
-            Image = password;
-            Coins = coins;
-        }
+        // Retrieves user id from the db, everything else is set through the parameters
         public User(string token, string username, string password, string name, string bio, string image, int coins)
         {
             try
             {
-                using (var unitOfWork = new UnitOfWork())
+                using (var u = new UnitOfWork())
                 {
-                    Id = unitOfWork.Users.GetIdByUsername(username);
+                    Id = u.Users.GetIdByUsername(username);
                 }
             }
             catch (Exception e)
@@ -95,28 +86,40 @@ namespace MTCG.src.Domain.Entities
             Image = password;
             Coins = coins;
         }
+        // Sets all users attributes through the given parameters
+        public User(Guid id, string token, string username, string password, string name, string bio, string image, int coins)
+        {
+            Id = id;
+            BearerToken = token;
+            Username = username;
+            Password = password;
+            Name = name;
+            Bio = password;
+            Image = password;
+            Coins = coins;
+        }
 
         //------------------------- Authentification --------------------------
         public void Register()
         {
             Id = Guid.NewGuid();
-            using (var unitOfWork = new UnitOfWork())
+            using (var u = new UnitOfWork())
             {
                 // Check if username is taken
-                if (unitOfWork.Users.GetIdByUsername(Username) != Guid.Empty)
+                if (u.Users.GetIdByUsername(Username) != Guid.Empty)
                 {
                     throw new DuplicateNameException(Username);
                 }
                 // If not, sign the user up
                 Console.WriteLine("User id: " + Id);
-                unitOfWork.Users.Add(this);
+                u.Users.Add(this);
             }
         }
         public string LogIn()
         {
-            using (var unitOfWork = new UnitOfWork())
+            using (var u = new UnitOfWork())
             {
-                var user = unitOfWork.Users.GetByUsername(Username);
+                var user = u.Users.GetByUsername(Username);
                 if (user == null) // User doesn't exist
                 {
                     throw new InvalidOperationException("User not registered");
@@ -125,13 +128,15 @@ namespace MTCG.src.Domain.Entities
                 {
                     throw new InvalidCredentialException("Passwords don't match");
                 }
+
                 // Create and store token in database
-                Id = unitOfWork.Users.GetIdByUsername(Username);
+                Id = u.Users.GetIdByUsername(Username);
                 var bearerToken = new BearerToken(Id);
-                unitOfWork.Users.AddToken(bearerToken);
+                u.Users.AddToken(bearerToken);
                 return bearerToken.Token;
             }
         }
+
         //---------------------------------------------------------------------
         //------------------------------ Cards --------------------------------
         public List<Card> CreatePackage(Guid id)
@@ -197,9 +202,9 @@ namespace MTCG.src.Domain.Entities
         public List<Card> ShowDeck()
         {
             var cards = new List<Card>();
-            using (var unitOfWork = new UnitOfWork())
+            using (var u = new UnitOfWork())
             {
-                cards = unitOfWork.Cards.GetDeck(Id).ToList();
+                cards = u.Cards.GetDeck(Id).ToList();
                 if (cards == null)
                 {
                     throw new Exception("No cards");
@@ -226,9 +231,9 @@ namespace MTCG.src.Domain.Entities
         public List<TradingDeal> ShowTradingDeals()
         {
             List<TradingDeal> allTrades;
-            using (var unitOfWork = new UnitOfWork())
+            using (var u = new UnitOfWork())
             {
-                allTrades = (List<TradingDeal>)unitOfWork.TradingDeals.GetAll();
+                allTrades = (List<TradingDeal>)u.TradingDeals.GetAll();
             }
             if (allTrades == null)
             {
@@ -238,9 +243,9 @@ namespace MTCG.src.Domain.Entities
         }
         public void Trade(Card card, User other)
         {
-            using (var unitOfWork = new UnitOfWork())
+            using (var u = new UnitOfWork())
             {
-                unitOfWork.Cards.UpdateUser(card.Id, other.Id); // Change the user_id to the new owner
+                u.Cards.UpdateUser(card.Id, other.Id); // Change the user_id to the new owner
             }
         }
 
@@ -252,16 +257,16 @@ namespace MTCG.src.Domain.Entities
             
             // TODO: Wait for the server to send you the response
         }
-        public List<string> ViewProfile()
+        public List<string> ViewProfile() // User is constructed with token --> All attributes are set with info from the db
         {
             return new List<string>() { Username, Name, Bio, Image };
         }
         public User ChangeProfile(string name, string bio, string image) // Unfinished
         {
-            using (var unitOfWork = new UnitOfWork())
+            using (var u = new UnitOfWork())
             {
-                // unitOfWork.Users.UpdateUser(Username, name, bio, image);
-                // var user = unitOfWork.Users.GetByUsername(Username);
+                // u.Users.UpdateUser(Username, name, bio, image);
+                // var user = u.Users.GetByUsername(Username);
                 // if (user.Name != name || user.Bio != bio || user.Image != image)
                 //{
                 //     throw new Exception($"Could not change {Username}'s profile");
@@ -272,7 +277,7 @@ namespace MTCG.src.Domain.Entities
         }
         public List<string> ViewStats() // Unfinished
         {
-            using (var unitOfWork = new UnitOfWork())
+            using (var u = new UnitOfWork())
             {
                 // TODO: Add GetStats to UserRepository, retrieve elo, wins and looses
             }
@@ -282,7 +287,7 @@ namespace MTCG.src.Domain.Entities
         }
         public List<User> ViewScoreBoard() // Unfinished
         {
-            using (var unitOfWork = new UnitOfWork())
+            using (var u = new UnitOfWork())
             {
                 // TODO: Create GetScoreboard function and add it to UserRepository
             }
@@ -296,9 +301,9 @@ namespace MTCG.src.Domain.Entities
             {
                 throw new HttpRequestException("Not Admin");
             }
-            using (var unitOfWork = new UnitOfWork())
+            using (var u = new UnitOfWork())
             {
-                var user = unitOfWork.Users.GetByUsername(usernameOther);
+                var user = u.Users.GetByUsername(usernameOther);
                 if (user == null)
                 {
                     throw new ArgumentException("Invalid username");
@@ -316,10 +321,10 @@ namespace MTCG.src.Domain.Entities
             {
                 throw new HttpRequestException("Not Admin");
             }
-            using (var unitOfWork = new UnitOfWork())
+            using (var u = new UnitOfWork())
             {
-                // unitOfWork.Users.UpdateUser(other);
-                // var result = unitOfWork.Users.GetByUsername(other.Username);
+                // u.Users.UpdateUser(other);
+                // var result = u.Users.GetByUsername(other.Username);
                 // if (result == null)
                 // {
                 //     throw new Exception("Failed to update user");
@@ -364,18 +369,18 @@ namespace MTCG.src.Domain.Entities
         }
         private void PayForPackage()
         {
-            using (var unitOfWork = new UnitOfWork())
+            using (var u = new UnitOfWork())
             {
                 Coins -= Card.PACK_PRICE;
-                unitOfWork.Users.Update(this);
+                u.Users.Update(this);
             }
         }
         private List<Card> GetCardsFromStack()
         {
             var cards = new List<Card>();
-            using (var unitOfWork = new UnitOfWork())
+            using (var u = new UnitOfWork())
             {
-                cards = unitOfWork.Cards.GetUserCards(Id).ToList();
+                cards = u.Cards.GetUserCards(Id).ToList();
                 if (cards == null)
                 {
                     throw new Exception("No cards");
@@ -386,9 +391,9 @@ namespace MTCG.src.Domain.Entities
         private List<Card> GetCardsFromDeck()
         {
             var deck = new List<Card>();
-            using (var unitOfWork = new UnitOfWork())
+            using (var u = new UnitOfWork())
             {
-                deck = unitOfWork.Cards.GetDeck(Id).ToList();
+                deck = u.Cards.GetDeck(Id).ToList();
                 if (deck == null)
                 {
                     throw new Exception("No cards");
@@ -398,17 +403,17 @@ namespace MTCG.src.Domain.Entities
         }
         public void TransferFromDeckToStack()
         {
-            using (var unitOfWork = new UnitOfWork())
+            using (var u = new UnitOfWork())
             {
-                var oldDeck = unitOfWork.Cards.GetDeck(Id).ToList();
+                var oldDeck = u.Cards.GetDeck(Id).ToList();
                 if (oldDeck != null)
                 {
                     foreach (var card in oldDeck)
                     {
                         // Add the card to the stack
-                        unitOfWork.Cards.Add(card);
+                        u.Cards.Add(card);
                         // Remove from the deck
-                        unitOfWork.Cards.DeleteFromDeck(card.Id); 
+                        u.Cards.DeleteFromDeck(card.Id); 
                     }
                 }
             }
@@ -422,17 +427,17 @@ namespace MTCG.src.Domain.Entities
                 }
 
                 var newDeck = new List<Card>();
-                using (var unitOfWork = new UnitOfWork())
+                using (var u = new UnitOfWork())
                 {
                     // Transfer chosen cards from stack to deck
                     foreach (var card_id in card_ids)
                     {
-                        var card = unitOfWork.Cards.Get(card_id); // Add the card to the deck
-                        unitOfWork.Cards.AddToDeck(card);
+                        var card = u.Cards.Get(card_id); // Add the card to the deck
+                        u.Cards.AddToDeck(card);
                         Console.WriteLine("Added to Deck");
-                        newDeck.Add(unitOfWork.Cards.Get(card_id)); // Save card in new deck list (to return to the user in the response)
+                        newDeck.Add(u.Cards.Get(card_id)); // Save card in new deck list (to return to the user in the response)
                         Console.WriteLine("Got Card");
-                        unitOfWork.Cards.Delete(card_id); // Remove from stack
+                        u.Cards.Delete(card_id); // Remove from stack
                         Console.WriteLine("Removed from stack");
                     }
                 }

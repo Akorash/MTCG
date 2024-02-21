@@ -59,16 +59,16 @@ namespace MTCG.src.HTTP
                 switch (req.Method)
                 {
                     case "GET":
-                        HandleGet(clientSocket, req.Url, req.Body);
+                        HandleGet(clientSocket, req.Url, req.Auth, req.Body);
                         break;
                     case "POST":
-                        HandlePost(clientSocket, req.Url, req.Body);
+                        HandlePost(clientSocket, req.Url, req.Auth, req.Body);
                         break;
                     case "PUT":
-                        HandlePut(clientSocket, req.Url, req.Body);
+                        HandlePut(clientSocket, req.Url, req.Auth, req.Body);
                         break;
                     case "DELETE":
-                        HandleDelete(clientSocket, req.Url, req.Body);
+                        HandleDelete(clientSocket, req.Url, req.Auth, req.Body);
                         break;
                     default:
                         break;
@@ -79,88 +79,88 @@ namespace MTCG.src.HTTP
                 Console.WriteLine(e);
             }
         }
-        private void HandleGet(Socket clientSocket, string url, string body)
+        private void HandleGet(Socket clientSocket, string url, string auth, string body)
         {
             Console.WriteLine($"Debug: {body}");
             switch (url)
             {
                 case "/users/{username}": 
-                    _rh.RetrieveUserData(clientSocket, body);
+                    _rh.RetrieveUserData(clientSocket, auth, body);
                     break;
                 case "/cards":
-                    _rh.ShowCards(clientSocket, body);
+                    _rh.ShowCards(clientSocket, auth, body);
                     break;
                 case "/deck":
-                    _rh.ShowDeck(clientSocket, body);
+                    _rh.ShowDeck(clientSocket, auth, body);
                     break;
                 case "/stats":
-                    _rh.RetrieveStats(clientSocket, body);
+                    _rh.RetrieveStats(clientSocket, auth, body);
                     break;
                 case "/scoreboard":
-                    _rh.RetrieveScoreBoard(clientSocket, body);
+                    _rh.RetrieveScoreBoard(clientSocket, auth, body);
                     break;
                 case "/tradings":
-                    _rh.ShowTradingDeals(clientSocket, body);
+                    _rh.ShowTradingDeals(clientSocket, auth, body);
                     break;
                 default:
-                    _rh.NotFound(clientSocket, body);
+                    _rh.NotFound(clientSocket, auth, body);
                     break;
             }
         }
-        private void HandlePost(Socket clientSocket, string url, string body)
+        private void HandlePost(Socket clientSocket, string url, string auth, string body)
         {
             switch (url)
             {
                 case "/users": 
-                    _rh.Register(clientSocket, body);
+                    _rh.Register(clientSocket, auth, body);
                     break;
                 case "/sessions":
-                    _rh.LogIn(clientSocket, body); 
+                    _rh.LogIn(clientSocket, auth, body); 
                     break;
                 case "/packages":
-                    _rh.NewPackage(clientSocket, body); 
+                    _rh.NewPackage(clientSocket, auth, body); 
                     break;
                 case "/transactions/packages":
-                    _rh.AquirePackage(clientSocket, body);
+                    _rh.AquirePackage(clientSocket, auth, body);
                     break;
                 case "/battles":
-                    _rh.Battle(clientSocket, body);
+                    _rh.Battle(clientSocket, auth, body);
                     break;
                 case "/tradings":
-                    _rh.NewTradingDeal(clientSocket, body);
+                    _rh.NewTradingDeal(clientSocket, auth, body);
                     break;
                 case "/tradings/{tradingdealid}":
-                    _rh.Trade(clientSocket, body);  
+                    _rh.Trade(clientSocket, auth, body);  
                     break;
                 default:
-                    _rh.NotFound(clientSocket, body);
+                    _rh.NotFound(clientSocket, auth, body);
                     break;
             }
         }
-        private void HandlePut(Socket clientSocket, string url, string body)
+        private void HandlePut(Socket clientSocket, string url, string auth, string body)
         {
             switch (url)
             {
                 case "/users/{username}":
-                    _rh.UpdateUserData(clientSocket, body);
+                    _rh.UpdateUserData(clientSocket, auth, body);
                     break;
                 case "/deck":
-                    _rh.ConfigureDeck(clientSocket, body);
+                    _rh.ConfigureDeck(clientSocket, auth, body);
                     break;
                 default:
-                    _rh.NotFound(clientSocket, body);
+                    _rh.NotFound(clientSocket, auth, body);
                     break;
             }
         }
-        private void HandleDelete(Socket clientSocket, string url, string body)
+        private void HandleDelete(Socket clientSocket, string url, string auth, string body)
         {
             switch (url)
             {
                 case "/tradings/{tradingdealid}":
-                    _rh.DeleteTradingDeal(clientSocket, body);
+                    _rh.DeleteTradingDeal(clientSocket, auth, body);
                     break;
                 default:
-                    _rh.NotFound(clientSocket, body);
+                    _rh.NotFound(clientSocket, auth, body);
                     break;
             }
         }

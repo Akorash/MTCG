@@ -36,7 +36,7 @@ namespace MTCG.src.HTTP
         //---------------------------------------------------------------------
 
         //------------------------- Authentification --------------------------
-        public void Register(Socket clientSocket, string reqBody)
+        public void Register(Socket clientSocket, string auth, string reqBody)
         {
             object body = null; // Response body
 
@@ -68,7 +68,7 @@ namespace MTCG.src.HTTP
             var response = new Response();
             response.SendJsonResponse(clientSocket, _status, body);
         } 
-        public void LogIn(Socket clientSocket, string reqBody)
+        public void LogIn(Socket clientSocket, string auth, string reqBody)
         {
             object body = default; // Response body
             
@@ -104,22 +104,17 @@ namespace MTCG.src.HTTP
             response.SendJsonResponse(clientSocket, _status, body);
         } 
         //---------------------------------------------------------------------
-        public void NewPackage(Socket clientSocket, string reqBody)
+        public void NewPackage(Socket clientSocket, string auth, string reqBody)
         {
             object body = default; // Response body
 
             try 
             {
-                var bearerTokenDTO = JsonConvert.DeserializeObject<BearerTokenDTO>(reqBody);
-                if (bearerTokenDTO == null)
+                if (auth == null || auth == string.Empty)
                 {
                     throw new ArgumentNullException();
                 }
-                if (bearerTokenDTO == null)
-                {
-                    throw new ArgumentNullException();
-                }
-                var user = new User(bearerTokenDTO.Token);
+                var user = new User(auth);
                 
                 body = user.CreatePackage(user.Id);
                 _status = HttpStatusCode.Created;
@@ -151,18 +146,17 @@ namespace MTCG.src.HTTP
             var response = new Response();
             response.SendJsonResponse(clientSocket, _status, body);
         }
-        public void AquirePackage(Socket clientSocket, string reqBody)
+        public void AquirePackage(Socket clientSocket, string auth, string reqBody)
         {
             object body = default; // Response body
 
             try
             {
-                var bearerToken = JsonConvert.DeserializeObject<BearerTokenDTO>(reqBody);
-                if (bearerToken == null)
+                if (auth == null || auth == string.Empty)
                 {
                     throw new ArgumentNullException();
                 }
-                var user = new User(bearerToken.Token);
+                var user = new User(auth);
 
                 body = user.BuyPackage();
                 _status = HttpStatusCode.OK;
@@ -186,22 +180,17 @@ namespace MTCG.src.HTTP
             var response = new Response();
             response.SendJsonResponse(clientSocket, _status, body);
         }
-        public void Battle(Socket clientSocket, string reqBody) // Unfinished
+        public void Battle(Socket clientSocket, string auth, string reqBody) // Unfinished
         {
             object body = default; // Response body
 
             try 
             {
-                var bearerToken = JsonConvert.DeserializeObject<BearerTokenDTO>(reqBody);
-                if (bearerToken == null)
+                if (auth == null || auth == string.Empty)
                 {
                     throw new ArgumentNullException();
                 }
-                if (bearerToken == null)
-                {
-                    throw new ArgumentNullException();
-                }
-                var user = new User(bearerToken.Token);
+                var user = new User(auth);
 
                 user.Battle(); // Add user to the battle queue
                 // Wait until someone else has joined and the battle has ended
@@ -216,22 +205,17 @@ namespace MTCG.src.HTTP
             var response = new Response();
             response.SendJsonResponse(clientSocket, _status, body);
         }
-        public void NewTradingDeal(Socket clientSocket, string reqBody)
+        public void NewTradingDeal(Socket clientSocket, string auth, string reqBody)
         {
             object body = default; // Response body
 
             try
             {
-                var bearerToken = JsonConvert.DeserializeObject<BearerTokenDTO>(reqBody);
-                if (bearerToken == null)
+                if (auth == null || auth == string.Empty)
                 {
                     throw new ArgumentNullException();
                 }
-                if (bearerToken == null)
-                {
-                    throw new ArgumentNullException();
-                }
-                var user = new User(bearerToken.Token);
+                var user = new User(auth);
 
                 _status = HttpStatusCode.Created;
             }
@@ -264,24 +248,20 @@ namespace MTCG.src.HTTP
             var response = new Response();
             response.SendJsonResponse(clientSocket, _status, body);
         }
-        public void Trade(Socket clientSocket, string reqBody) // Unfinished
+        public void Trade(Socket clientSocket, string auth, string reqBody) // Unfinished
         {
             object body = default; // Response body
 
             try
             {
-                var bearerToken = JsonConvert.DeserializeObject<BearerTokenDTO>(reqBody);
-                if (bearerToken == null)
+                if (auth == null || auth == string.Empty)
                 {
                     throw new ArgumentNullException();
                 }
-                if (bearerToken == null)
-                {
-                    throw new ArgumentNullException();
-                }
+                var user = new User(auth);
+
                 var card = JsonConvert.DeserializeObject<CardDTO>(reqBody);
                 var other = JsonConvert.DeserializeObject<UserDTO>(reqBody);
-                var user = new User(bearerToken.Token);
 
                 // body = user.Trade(_mapper.Cards.Map(card), _mapper.Users.Map(other));
                 _status = HttpStatusCode.Created;
@@ -318,23 +298,19 @@ namespace MTCG.src.HTTP
         //---------------------------------------------------------------------
         // /////////////////////////////// GET ////////////////////////////////
         //---------------------------------------------------------------------
-        public void RetrieveUserData(Socket clientSocket, string reqBody) // TODO
+        public void RetrieveUserData(Socket clientSocket, string auth, string reqBody) // TODO
         {
             object body = default; // Response body
 
             try
             {
-                var bearerToken = JsonConvert.DeserializeObject<BearerTokenDTO>(reqBody);
-                if (bearerToken == null)
+                if (auth == null || auth == string.Empty)
                 {
                     throw new ArgumentNullException();
                 }
-                if (bearerToken == null)
-                {
-                    throw new ArgumentNullException();
-                }
+                var user = new User(auth);
+
                 var other = JsonConvert.DeserializeObject<UserDTO>(reqBody);
-                var user = new User(bearerToken.Token);
 
                 body = user.ViewUserData(other.Username);
                 _status = HttpStatusCode.OK;
@@ -353,20 +329,18 @@ namespace MTCG.src.HTTP
             var response = new Response();
             response.SendJsonResponse(clientSocket, _status, body);
         }
-        public void ShowCards(Socket clientSocket, string reqBody)
+        public void ShowCards(Socket clientSocket, string auth, string reqBody)
         {
             object body = default; // Response body
 
             try
             {
-                var bearerToken = JsonConvert.DeserializeObject<BearerTokenDTO>(reqBody);
-                if (bearerToken == null)
+                if (auth == null || auth == string.Empty)
                 {
                     throw new ArgumentNullException();
-                    Console.WriteLine($"Argument null execption");
                 }
+                var user = new User(auth);
 
-                var user = new User(bearerToken.Token);
                 if (user == null)
                 {
                     _status = HttpStatusCode.Unauthorized;
@@ -390,22 +364,17 @@ namespace MTCG.src.HTTP
             var response = new Response();
             response.SendJsonResponse(clientSocket, _status, body);
         }
-        public void ShowDeck(Socket clientSocket, string reqBody)
+        public void ShowDeck(Socket clientSocket, string auth, string reqBody)
         {
             object body = default; // Response body
 
             try
             {
-                var bearerToken = JsonConvert.DeserializeObject<BearerTokenDTO>(reqBody);
-                if (bearerToken == null)
+                if (auth == null || auth == string.Empty)
                 {
                     throw new ArgumentNullException();
                 }
-                if (bearerToken == null)
-                {
-                    throw new ArgumentNullException();
-                }
-                var user = new User(bearerToken.Token);
+                var user = new User(auth);
 
                 body = user.ShowDeck();
                 _status = HttpStatusCode.OK;
@@ -423,22 +392,17 @@ namespace MTCG.src.HTTP
             var response = new Response();
             response.SendJsonResponse(clientSocket, _status, body);
         }
-        public void RetrieveStats(Socket clientSocket, string reqBody) // Unfinished
+        public void RetrieveStats(Socket clientSocket, string auth, string reqBody) // Unfinished
         {
             object body = default; // Response body
 
             try
             {
-                var bearerToken = JsonConvert.DeserializeObject<BearerTokenDTO>(reqBody);
-                if (bearerToken == null)
+                if (auth == null || auth == string.Empty)
                 {
                     throw new ArgumentNullException();
                 }
-                if (bearerToken == null)
-                {
-                    throw new ArgumentNullException();
-                }
-                var user = new User(bearerToken.Token);
+                var user = new User(auth);
 
                 body = user.ViewStats();
                 _status = HttpStatusCode.OK;
@@ -456,22 +420,17 @@ namespace MTCG.src.HTTP
             var response = new Response();
             response.SendJsonResponse(clientSocket, _status, body);
         }
-        public void RetrieveScoreBoard(Socket clientSocket, string reqBody) // Unfinished
+        public void RetrieveScoreBoard(Socket clientSocket, string auth, string reqBody) // Unfinished
         {
             object body = default; // Response body
 
             try
             {
-                var bearerToken = JsonConvert.DeserializeObject<BearerTokenDTO>(reqBody);
-                if (bearerToken == null)
+                if (auth == null || auth == string.Empty)
                 {
                     throw new ArgumentNullException();
                 }
-                if (bearerToken == null)
-                {
-                    throw new ArgumentNullException();
-                }
-                var user = new User(bearerToken.Token);
+                var user = new User(auth);
 
                 body = user.ViewScoreBoard();
                 _status = HttpStatusCode.OK;
@@ -490,22 +449,17 @@ namespace MTCG.src.HTTP
             var response = new Response();
             response.SendJsonResponse(clientSocket, _status, body);
         }
-        public void ShowTradingDeals(Socket clientSocket, string reqBody)
+        public void ShowTradingDeals(Socket clientSocket, string auth, string reqBody)
         {
             object body = default; // Response body
 
             try
             {
-                var bearerToken = JsonConvert.DeserializeObject<BearerTokenDTO>(reqBody);
-                if (bearerToken == null)
+                if (auth == null || auth == string.Empty)
                 {
                     throw new ArgumentNullException();
                 }
-                if (bearerToken == null)
-                {
-                    throw new ArgumentNullException();
-                }
-                var user = new User(bearerToken.Token);
+                var user = new User(auth);
 
                 body = user.ShowTradingDeals();
                 _status = HttpStatusCode.OK;   
@@ -532,23 +486,19 @@ namespace MTCG.src.HTTP
         // /////////////////////////////// PUT ////////////////////////////////
         //---------------------------------------------------------------------
 
-        public void UpdateUserData(Socket clientSocket, string reqBody) // Unfinished
+        public void UpdateUserData(Socket clientSocket, string auth, string reqBody) // Unfinished
         {
             object body = default; // Response body
 
             try
             {
-                var bearerToken = JsonConvert.DeserializeObject<BearerTokenDTO>(reqBody);
-                if (bearerToken == null)
+                if (auth == null || auth == string.Empty)
                 {
                     throw new ArgumentNullException();
                 }
-                if (bearerToken == null)
-                {
-                    throw new ArgumentNullException();
-                }
+                var user = new User(auth);
+
                 var other = JsonConvert.DeserializeObject<UserDTO>(reqBody);
-                var user = new User(bearerToken.Token);
 
                 // body = user.UpdateData(_mapper.Users.Map(other));
                 _status = HttpStatusCode.OK;
@@ -566,23 +516,19 @@ namespace MTCG.src.HTTP
             var response = new Response();
             response.SendJsonResponse(clientSocket, _status, body);
         }
-        public void ConfigureDeck(Socket clientSocket, string reqBody) // Unfinished
+        public void ConfigureDeck(Socket clientSocket, string auth, string reqBody) // Unfinished
         {
             object body = default; // Response body
 
             try
             {
-                var bearerToken = JsonConvert.DeserializeObject<BearerTokenDTO>(reqBody);
-                if (bearerToken == null)
+                if (auth == null || auth == string.Empty)
                 {
                     throw new ArgumentNullException();
                 }
-                if (bearerToken == null)
-                {
-                    throw new ArgumentNullException();
-                }
+                var user = new User(auth);
+
                 var deckDTO = JsonConvert.DeserializeObject<DeckDTO>(reqBody);
-                var user = new User(bearerToken.Token);
 
                 var deck = new List<Guid>() { deckDTO.Card1Id, deckDTO.Card2Id, deckDTO.Card3Id, deckDTO.Card4Id };
                 body = user.ConfigureDeck(deck);
@@ -606,22 +552,18 @@ namespace MTCG.src.HTTP
         //---------------------------------------------------------------------
         // ///////////////////////////// DELETE ///////////////////////////////
         //---------------------------------------------------------------------
-        public void DeleteTradingDeal(Socket clientSocket, string reqBody) // Unfinished
+        public void DeleteTradingDeal(Socket clientSocket, string auth, string reqBody) // Unfinished
         {
             object body = default; // Response body
             try
             {
-                var bearerToken = JsonConvert.DeserializeObject<BearerTokenDTO>(reqBody);
-                if (bearerToken == null)
+                if (auth == null || auth == string.Empty)
                 {
                     throw new ArgumentNullException();
                 }
-                if (bearerToken == null)
-                {
-                    throw new ArgumentNullException();
-                }
+                var user = new User(auth);
+
                 var deckDTO = JsonConvert.DeserializeObject<DeckDTO>(reqBody);
-                var user = new User(bearerToken.Token);
 
                 var deck = new List<Guid>() { deckDTO.Card1Id, deckDTO.Card2Id, deckDTO.Card3Id, deckDTO.Card4Id };
                 body = user.ConfigureDeck(deck);
@@ -643,7 +585,7 @@ namespace MTCG.src.HTTP
             response.SendJsonResponse(clientSocket, _status, body);
         }
         //---------------------------------------------------------------------
-        public void NotFound(Socket clientSocket, string reqBody)
+        public void NotFound(Socket clientSocket, string auth, string reqBody)
         {
             object body = null;
             _status = HttpStatusCode.NotFound;

@@ -79,8 +79,7 @@ namespace MTCG.src.Domain
                     GiveWinnerDefeatedCard(player2, player1, card1);
                 }
                 cnt++;
-            }
-            
+            }  
         }
         private Card ChooseRandom(List<Card> deck)
         {

@@ -13,15 +13,20 @@ namespace MTCG.src.HTTP
         private readonly char _splitWords = ' ';
         private readonly string _splitLines = "\r\n";
         private readonly int _startLineElements = 3;
+        private readonly int _headerElements = 2;
         private readonly int _methodIndex = 0;
         private readonly int _urlIndex = 1;
+        private readonly string _bearerPrefix = "Bearer ";
+
         public string Method { get; private set; }
+        public string Auth { get; private set; }
         public string Url { get; private set; }
         public string Body { get; private set; }
 
         public Request()
         {
             Method = string.Empty;
+            Auth = string.Empty;
             Url = string.Empty;
             Body = string.Empty;
         }
@@ -48,6 +53,9 @@ namespace MTCG.src.HTTP
             string[] startLineParts = startLine.Split(_splitWords);
             ParseMethodAndUrl(startLineParts[0], startLineParts[1], startLineParts.Length);
 
+            // Parse headers
+            ParseHeaders(requestLines);
+
             // Parse body 
             ParseBody(requestLines);
         }
@@ -59,6 +67,40 @@ namespace MTCG.src.HTTP
             }
             Method = method;
             Url = url;
+        }
+        private void ParseHeaders(string[] requestLines)
+        {
+            for (int i = 1; i < requestLines.Length; i++)   // Start with i = 1 since we've already looked at the start line 
+            {
+                string currentLine = requestLines[i];
+
+                if (string.IsNullOrEmpty(currentLine))
+                {
+                    break;  // End of headers
+                }
+
+                // Split header into key and value
+                string[] headerParts = currentLine.Split(new[] { ':' }, _headerElements);
+
+                if (headerParts.Length == _headerElements)
+                {
+                    string headerKey = headerParts[0].Trim();
+                    string headerValue = headerParts[1].Trim();
+
+                    if (headerKey.Equals("Authorization", StringComparison.OrdinalIgnoreCase))
+                    {
+                        // Check if the Authorization header contains a bearer token
+                        if (headerValue.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
+                        {
+                            Auth = headerValue.Substring(_bearerPrefix.Length);
+                        }
+                        else
+                        {
+                            throw new ArgumentException("Unsupported authentication scheme.");
+                        }
+                    }
+                }
+            }
         }
         private void ParseBody(string[] requestLines)
         {
